@@ -2,7 +2,7 @@
 <use name="rootgraphics"/>
 <use name="FWCore/FWLite"/>
 <use name="FWCore/ParameterSet"/>
-<use name="FWCore/PythonParameterSet"/>
+<use name="FWCore/ParameterSetReader"/>
 <use name="FWCore/ServiceRegistry"/>
 <use name="FWCore/Framework"/>
 <use name="FWCore/Utilities"/>
