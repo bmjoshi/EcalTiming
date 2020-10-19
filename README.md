@@ -11,6 +11,7 @@ EcalTiming
     * git clone  git@github.com:bmarzocc/EcalTiming.git
     * cd EcalTiming
     * git checkout EcalTiming_UltraLegacy
+    * cd -
     * scram b -j 10
 
 2) Run local:
