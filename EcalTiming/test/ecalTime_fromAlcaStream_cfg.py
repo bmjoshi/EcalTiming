@@ -31,12 +31,12 @@ options.register('offset',
                  VarParsing.VarParsing.varType.float,
                  "add this to each crystal time")
 options.register('minEnergyEB',
-                 1.5,
+                 0.0,
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.float,
                  "add this to minimum energy threshold")
 options.register('minEnergyEE',
-                 3.0,
+                 0.0,
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.float,
                  "add this to minimum energy threshold")
@@ -72,9 +72,14 @@ options.register('loneBunch',
                    VarParsing.VarParsing.varType.int,
                    "0=No, 1=Yes"
                  )
+options.register('outputFile',
+                 'output/ecalTiming.root',
+                 VarParsing.VarParsing.multiplicity.singleton,
+                 VarParsing.VarParsing.varType.string,
+                "outputFile")
                  
 ### setup any defaults you want
-options.output="output/ecalTiming.root"
+#options.output=options.outputFile
 options.secondaryOutput="ntuple.root"
 
 if(options.streamName=="AlCaP0"): print "stream ",options.streamName #options.files = "/store/data/Commissioning2015/AlCaP0/RAW/v1/000/246/342/00000/048ECF48-F906-E511-95AC-02163E011909.root"
@@ -237,7 +242,7 @@ dataset = cms.untracked.PSet(
 if doAnalysis:
 	## Histogram files
 	process.TFileService = cms.Service("TFileService",
-                                   fileName = cms.string(options.output),
+                                   fileName = cms.string(options.outputFile),
                                    closeFileFast = cms.untracked.bool(True)
                                    )
 

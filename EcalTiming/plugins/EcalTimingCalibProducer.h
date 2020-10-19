@@ -177,9 +177,12 @@ private:
         std::vector<double> _ampCut_barrelM; ///< minimum amplitude threshold in EBM
         std::vector<double> _ampCut_endcapP; ///< minimum amplitude threshold in EEP
         std::vector<double> _ampCut_endcapM; ///< minimum amplitude threshold in EEM
-        std::vector<double> _eThresholdsEB; ///< minimum energy threshold in EB
-        std::vector<double> _parAThresholds_endcap; ///<B + A*ring 2018 thr are defined as two linear cut (one for iring<30 and one above)
-        std::vector<double> _parBThresholds_endcap; ///<B + A*ring 2018 thr are defined as two linear cut (one for iring<30 and one above)
+        std::vector<double> _eThresholdsEB_par0; ///< fit of energy (EB+, EB-) 
+        std::vector<double> _eThresholdsEB_par1; ///< fit of energy (EB+, EB-) 
+        std::vector<double> _eThresholdsEB_par2; ///< fit of energy (EB+, EB-) 
+        std::vector<double> _eThresholdsEE_par0; ///< fit of energy (EE ring<29, EE ring>=29) 
+        std::vector<double> _eThresholdsEE_par1; ///< fit of energy (EE ring<29, EE ring>=29) 
+        std::vector<double> _eThresholdsEE_par2; ///< fit of energy (EE ring<29, EE ring>=29) 
 	unsigned int _minEntries; ///< require a minimum number of entries in a ring to do averages
 	float        _globalOffset;    ///< time to subtract from every event
         bool _storeEvents;
@@ -240,16 +243,13 @@ private:
               int iRing = _ringTools.getRingIndexInSubdet(detid);
               if(detid.subdetId() == EcalBarrel)
               {
-                 _CrysEnergyMap[detid] = 13*0.04 + _energyThresholdOffsetEB;
-                 //std::cout << "EB-" << iRing << ": " << _CrysEnergyMap[detid] << std::endl;
-                 //_CrysEnergyMap[detid] = _eThresholdsEB[iRing]  + _energyThresholdOffsetEB;
+                 if(iRing<0) _CrysEnergyMap[detid] = (_eThresholdsEB_par0[0] + _eThresholdsEB_par1[0]*iRing + _eThresholdsEB_par2[0]*iRing*iRing) + _energyThresholdOffsetEB;
+                 if(iRing>0) _CrysEnergyMap[detid] = (_eThresholdsEB_par0[1] + _eThresholdsEB_par1[1]*iRing + _eThresholdsEB_par2[1]*iRing*iRing) + _energyThresholdOffsetEB;
               }else{
-                 if(iRing < 30)
-	            //_CrysEnergyMap[detid] = (_parBThresholds_endcap[0] + _parAThresholds_endcap[0]*iRing);
-                    _CrysEnergyMap[detid] = 20 * (79.29 - 4.148 * iRing + 0.2442 * iRing * iRing ) / 1000 + _energyThresholdOffsetEE;
+                 if(fabs(iRing) < 29)
+	            _CrysEnergyMap[detid] = (_eThresholdsEE_par0[0] + _eThresholdsEE_par1[0]*fabs(iRing) + _eThresholdsEE_par2[0]*iRing*iRing) + _energyThresholdOffsetEE;
                  else
-                    _CrysEnergyMap[detid] = (_parBThresholds_endcap[1] + _parAThresholds_endcap[1]*iRing);
-                 //std::cout << "EE-" << iRing << ": " << _CrysEnergyMap[detid] << std::endl;
+                    _CrysEnergyMap[detid] = (_eThresholdsEE_par0[1] + _eThresholdsEE_par1[1]*fabs(iRing) + _eThresholdsEE_par2[1]*iRing*iRing) + _energyThresholdOffsetEE;
               }
            }
            return _CrysEnergyMap[detid];
