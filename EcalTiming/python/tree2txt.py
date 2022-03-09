@@ -54,15 +54,15 @@ def tree2txt(tree,filter = []):
 		if counter >= nevents: break
 
 #dump tree
-	print '\t'.join( [b.GetName() for b in branches] )
+	print('\t').join( [b.GetName() for b in branches] )
 	for i in range(nevents):
-		print '\t'.join([ branch_format[b] % columns[b][i] for b in branches])
+		print('\t').join([ branch_format[b] % columns[b][i] for b in branches])
 
 if __name__ == "__main__":
 	#Parse Arguments
 	argc = len(sys.argv)
 	if argc < 3:
-		print "Usage: tree2txt.py input.root path/to/TTree"
+		print("Usage: tree2txt.py input.root path/to/TTree")
 		sys.exit(-1)
 
 	filename = sys.argv[1]

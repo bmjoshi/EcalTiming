@@ -29,7 +29,7 @@ def initMap(name, title, iz):
 		xtitle = "ix"
 		ytitle = "iy"
 	else:
-		print "bad iz value", iz
+		print("bad iz value", iz)
 		return None
 	h.SetXTitle(xtitle)
 	h.SetYTitle(ytitle)
@@ -44,7 +44,7 @@ def inittime1d(name, title, iz, low=-10, hi=10):
 	elif iz == 1:
 		det = "EEP_"
 	else:
-		#print "bad iz value", iz
+		#print("bad iz value", iz)
 		det = str(iz)
 	h = ROOT.TH1F(det + name, title, 50, low, hi)
 	h.SetXTitle("Time [ns]")
@@ -60,7 +60,7 @@ def initiRing(name, title, iz, xtitle="iRing", ytitle="Mean Time [ns]"):
 	elif iz == 1:
 		h = ROOT.TProfile("EEP_" + name, title, 39, 0, 39)
 	else:
-		print "bad iz value", iz
+		print("bad iz value", iz)
 		return None
 	h.SetXTitle(xtitle)
 	h.SetYTitle(ytitle)
@@ -74,7 +74,7 @@ def initEvsT(name, title, iz):
 	elif iz == 1:
 		det = "EEP" 
 	else:
-		print "bad iz value", iz
+		print("bad iz value", iz)
 		return None
 	h = ROOT.TH2F(det + name, title, 50,0,20,100,-10,10) 
 	h.SetXTitle("Energy [GeV]")
@@ -123,7 +123,7 @@ def plotMaps(tree, outdir, prefix=""):
 	elec_map = dict()
 	counter = 0
 
-	print "Found", tree.GetEntries(), "entries"
+	print("Found", tree.GetEntries(), "entries")
 	if tree.GetEntries() == 0: sys.exit(-1)
 	
 	offset = dict()
@@ -136,7 +136,7 @@ def plotMaps(tree, outdir, prefix=""):
 	oldCalib = getCalib()
 
 	for event in tree:
-		if not counter % (tree.GetEntries()/10): print counter, '/', tree.GetEntries()
+		if not counter % (tree.GetEntries()/10): print(counter, '/', tree.GetEntries())
 		counter += 1
 		if event.num == 0: continue
 
@@ -148,7 +148,7 @@ def plotMaps(tree, outdir, prefix=""):
 			iz = event.iz
 		key = iz
 		if math.isnan(event.time): 
-			print "Found nan", event.rawid, event.ix, event.iy, iz, event.num
+			print("Found nan", event.rawid, event.ix, event.iy, iz, event.num)
 			continue
 		# initialize histograms (if they haven't been made yet
 		initHists(prefix,time, initMap, key, "time", "Time [ns]")
@@ -198,7 +198,7 @@ def plotMaps(tree, outdir, prefix=""):
 		if event.rawid in oldCalib:
 			time_rel2012[key].Fill(x,y, t - oldCalib[event.rawid])
 		else:
-			print "Rawid not found", event.rawid 
+			print("Rawid not found", event.rawid )
 
 
 	for ix,iy,iz in elec_map:
@@ -257,7 +257,7 @@ def plotMaps(tree, outdir, prefix=""):
 	for key in timeError1d:
 		timeError1d[key].SetStats(True)
 		timeError1d[key].Draw()
-		print timeError1d[key].GetMean(), timeError1d[key].GetRMS()
+		print(timeError1d[key].GetMean(), timeError1d[key].GetRMS())
 		c.SaveAs(outdir + "/" + timeError1d[key].GetName() + ".png")
 
 	ROOT.gStyle.SetOptStat(0)
@@ -319,19 +319,22 @@ if __name__ == "__main__":
 
 	customROOTstyle()
 	ROOT.gROOT.SetBatch(True)
-	print sys.argv
-	filename = sys.argv[1]
-	prefix = sys.argv[2]
+	print(sys.argv)
+	prefix = sys.argv[1]
+	filename = sys.argv[2]
 
-	#if len(sys.argv) > 1:
-	#	outdir = sys.argv[1]
-	#elif filename.startswith("output"):
-		# use same path as input file with output -> plots
-	dir, basename = os.path.split(filename)
-	dir = dir.split('/')
-	print dir[-1:]
-	outdir = '/'.join(dir[:-1]) + "/plots/" + dir[-1]
-	outdir = os.path.normpath(outdir)
+	if len(sys.argv) == 3:
+		#if len(sys.argv) > 1:
+		#	outdir = sys.argv[1]
+		#elif filename.startswith("output"):
+			# use same path as input file with output -> plots
+		dir, basename = os.path.split(filename)
+		dir = dir.split('/')
+		print(dir[-1:])
+		outdir = '/'.join(dir[:-1]) + "/plots/" + dir[-1]
+		outdir = os.path.normpath(outdir)
+	elif len(sys.argv) == 4:
+		outdir = sys.argv[3]
 
 	def mkdir_p(path):
 		try:
@@ -342,7 +345,7 @@ if __name__ == "__main__":
 			else: raise
 
 	mkdir_p(outdir)
-	#shutil.copy("plots/index.php", outdir)
+	shutil.copy("plots/index.php", outdir)
 
 	file = ROOT.TFile.Open(filename)
 	tree = file.Get("timing/EcalSplashTiming/timingTree")

@@ -9,7 +9,7 @@ import shutil
 
 argc = len(sys.argv)
 if argc < 3:
-	print "Usage: tree2txt.py input.root path/to/TTree"
+	print("Usage: tree2txt.py input.root path/to/TTree")
 	sys.exit(-1)
 
 filename = sys.argv[1]

@@ -1,0 +1,19 @@
+evaluate
+>>> Run calibration
+---> 1 - Input file = /eos/cms/store/group/dpg_ecal/alca_ecalcalib/EcalTiming/Run2018D_UltraLegacy/Test/AlCaPhiSym/crab_AlCaPhiSym_Run2018D-v1_RAW/220227_184141/0000/timing_reco_selections_346.root
+---> 2 - Input file = /eos/cms/store/group/dpg_ecal/alca_ecalcalib/EcalTiming/Run2018D_UltraLegacy/Test/AlCaPhiSym/crab_AlCaPhiSym_Run2018D-v1_RAW/220227_184141/0000/timing_reco_selections_347.root
+---> 3 - Input file = /eos/cms/store/group/dpg_ecal/alca_ecalcalib/EcalTiming/Run2018D_UltraLegacy/Test/AlCaPhiSym/crab_AlCaPhiSym_Run2018D-v1_RAW/220227_184141/0000/timing_reco_selections_348.root
+---> 4 - Input file = /eos/cms/store/group/dpg_ecal/alca_ecalcalib/EcalTiming/Run2018D_UltraLegacy/Test/AlCaPhiSym/crab_AlCaPhiSym_Run2018D-v1_RAW/220227_184141/0000/timing_reco_selections_349.root
+---> 5 - Input file = /eos/cms/store/group/dpg_ecal/alca_ecalcalib/EcalTiming/Run2018D_UltraLegacy/Test/AlCaPhiSym/crab_AlCaPhiSym_Run2018D-v1_RAW/220227_184141/0000/timing_reco_selections_350.root
+maxEvents = 9079253
+--- Reading entry = 0
+--- Reading entry = 1000000
+--- Reading entry = 2000000
+--- Reading entry = 3000000
+--- Reading entry = 4000000
+--- Reading entry = 5000000
+--- Reading entry = 6000000
+--- Reading entry = 7000000
+--- Reading entry = 8000000
+--- Reading entry = 9000000
+DONE

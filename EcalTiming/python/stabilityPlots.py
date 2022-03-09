@@ -19,20 +19,20 @@ file = ROOT.TFile.Open(filename)
 tree = file.Get("TriggerResults/EcalSplashTiming_0/energyStabilityTree")
 c = ROOT.TCanvas()
 
-#print "Finding list of cuts"
+#print("Finding list of cuts")
 #cuts = list(set([event.min_energy for event in tree]))
 #cuts.sort()
 
 cuts = [0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0]
 cuts = [0.5, 1.0, 1.5, ]
-print "Cuts are",cuts
+print("Cuts are",cuts)
 
-print "Finding max occupancy/energy"
+print("Finding max occupancy/energy")
 #max_num = max([event.num for event in tree])
 #max_energy = max([event.energy for event in tree])
 max_num = 38341
 max_energy = 68.5
-print max_num,max_energy
+print(max_num,max_energy)
 
 def getBins(detector):
 	if detector == "EB":
@@ -91,7 +91,7 @@ def makeNumPlots(detector,cut,max_num,tree,canvas):
 
 c = ROOT.TCanvas()
 for i,cut in enumerate(cuts):
-	print "Doing cut", cut
+	print("Doing cut", cut)
 	cut_str = float2name(cut)
 
 	makeTimePlots("EB",cut,tree,c)

@@ -21,7 +21,7 @@ def fillFromStore(dir,ffile=0,step=-1,generatePfn=True):
     prefix='singlefile'
     lsout=[dir]
     if(dir.find('path=')>=0) :
-        print 'Using dbs to query %s'%(dir)
+        print('Using dbs to query %s'%(dir))
         prefix='eoscms'
         lsout=commands.getstatusoutput('dbs lsf --' + dir)[1].split()
 
@@ -34,8 +34,8 @@ def fillFromStore(dir,ffile=0,step=-1,generatePfn=True):
         prefix='eoscms'
         lscommand = '/afs/cern.ch/project/eos/installation/0.3.84-aquamarine/bin/eos.select ls ' + dir + ' | grep root'
         lsouttmp = commands.getstatusoutput(lscommand)[1].split()
-        print lscommand
-        print lsouttmp
+        print(lscommand)
+        print(lsouttmp)
 
         #this is needed as cmsLs lists twice files staged from castor
         #(only needed during transition to EOS, can remove now)
@@ -51,7 +51,7 @@ def fillFromStore(dir,ffile=0,step=-1,generatePfn=True):
             if(basename.find('tree_')==0) : continue
             if(basename.find('histogram')==0): continue
             lsout.append(dir + "/" + l)
-        print 'Discarded ' + str(nduplicate)  + ' files duplicated in cmsLs output'
+        print('Discarded ' + str(nduplicate)  + ' files duplicated in cmsLs output')
        
     elif(dir.find('.root')<0):
         prefix='file'
@@ -123,26 +123,25 @@ def checkStoreForDuplicates(outdir):
             for fileLine in lsCmd_outLines:
                 if not "root" in fileLine: continue
                 fileName=fileLine
-                if(isCastor) : fileName = fileLine.split()[8]
-
-	        if(checkInputFile(fileName)==True):
-		    jobNumber=-1
-		    try:
-			fileBaseName=os.path.basename(fileName)
-			jobNumber=int(fileBaseName.split("_")[1])
-		    except:
-			continue
-
-		    if jobNumber in jobNumbers:
-			if not jobNumber in duplicatedJobs:  duplicatedJobs.append(jobNumber)
-			duplicatedFiles.append(fileName)
-		    else :
-			jobNumbers.append(jobNumber)
-			origFiles.append(fileName)
-			nOutFile += 1
-   	        else:
-		    print("   #corrupted file found : " + fileName)
-		    duplicatedFiles.append(fileName)
+                if(isCastor): fileName = fileLine.split()[8]
+                if(checkInputFile(fileName)==True):
+                    jobNumber=-1
+                    try:
+                        fileBaseName=os.path.basename(fileName)
+                        jobNumber=int(fileBaseName.split("_")[1])
+                    except:
+                        continue
+                    if jobNumber in jobNumbers:
+                        if not jobNumber in duplicatedJobs:  duplicatedJobs.append(jobNumber)
+                        duplicatedFiles.append(fileName)
+                        
+                    else :
+                        jobNumbers.append(jobNumber)
+                        origFiles.append(fileName)
+                        nOutFile += 1
+                else:
+                    print("   #corrupted file found : " + fileName)
+                    duplicatedFiles.append(fileName)
     return natural_sort(duplicatedFiles)
 
 
@@ -151,13 +150,13 @@ clean up for duplicats in the storage area
 """
 def removeDuplicates(dir):
     duplicatedFiles=checkStoreForDuplicates(dir)
-    print 'Removing ' + str(len(duplicatedFiles)) + ' duplicated files in ' + dir
+    print('Removing ' + str(len(duplicatedFiles)) + ' duplicated files in ' + dir)
     isEOS=False
     isCastor=False
     if(dir.find('/store/')==0) : isEOS=True
     if(dir.find('castor')>=0) : isCastor=True
     for f in duplicatedFiles :
-        print f
+        print(f)
         if(isEOS) : commands.getstatusoutput('cmsRm ' + f)
         elif(isCastor) : commands.getstatusoutput('rfrm ' +dir + '/' + f)
         else : commands.getstatusoutput('rm ' +dir + '/' + f)
@@ -184,7 +183,7 @@ def configureSourceFromCommandLine() :
                         if(len(sys.argv)>5 ):
                             if(sys.argv[5].isdigit()) : step=int(sys.argv[5])
     except:
-        print '[storeTools_cff] Could not configure from command line, will return default values'
+        print('[storeTools_cff] Could not configure from command line, will return default values')
 
     return outputFile, fillFromStore(storeDir,ffile,step)
 

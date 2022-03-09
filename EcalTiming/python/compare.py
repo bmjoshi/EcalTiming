@@ -25,7 +25,7 @@ def initMap(name, title, iz):
 		xtitle = "ix"
 		ytitle = "iy"
 	else:
-		print "bad iz value", iz
+		print("bad iz value", iz)
 		return None
 	h.SetXTitle(xtitle)
 	h.SetYTitle(ytitle)
@@ -39,7 +39,7 @@ def inittime1d(name, title, iz):
 	elif iz == 1:
 		det = "EEP_"
 	else:
-		#print "bad iz value", iz
+		#print("bad iz value", iz)
 		det = str(iz)
 	h = ROOT.TH1F(det + name, title, 50, -10,30)
 	h.SetXTitle("Time [ns]")
@@ -69,7 +69,7 @@ for iz in [-1,0,1]:
 means = {0:0, -1:0, 1:0}
 simone_means = {0:0,  -1:0, 1:0}
 ids = set(simone) & set(peter) & set(rawidMap)
-print len(ids)
+print(len(ids))
 for id in ids:
 	crystal= rawidMap[id]
 	iz = crystal.iz
@@ -122,7 +122,7 @@ for h in hdiff1d.values() + hpeter1d.values() + hsimone1d.values():
 #		# use same path as input file with output -> plots
 #	dir, basename = os.path.split(filename)
 #	dir = dir.split('/')
-#	print dir[-1:]
+#	print(dir[-1:])
 #	outdir = '/'.join(dir[:-1]) + "/plots/" + dir[-1]
 #	outdir = os.path.normpath(outdir)
 #

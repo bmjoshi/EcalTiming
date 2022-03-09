@@ -43,7 +43,7 @@ def saveEventTimingPlots(eventdir):
 		h_en.GetZaxis().SetRangeUser(0,1000)
 		h_en.Draw("colz")
 
-	print eventName, [timehist[name].Integral()/timehist[name].GetEntries() for name in ["EEM","EB","EEP"]]
+	print(eventName, [timehist[name].Integral()/timehist[name].GetEntries() for name in ["EEM","EB","EEP"]])
 
 	c.SaveAs("plots/" + eventName+"_en.pdf")
 	c.SaveAs("plots/" + eventName+"_en.png")

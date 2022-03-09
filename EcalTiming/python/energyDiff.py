@@ -21,7 +21,7 @@ if __name__ == "__main__":
 
 	dir, basename = os.path.split(file_pattern)
 	dir = dir.split('/')
-	print dir[-1:]
+	print(dir[-1:])
 	outdir = '/'.join(dir[:-1]) + "/plots/" + dir[-1] + "/" + dirname +"/"
 	outdir = os.path.normpath(outdir)
 

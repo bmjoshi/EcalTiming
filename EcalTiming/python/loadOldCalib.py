@@ -54,7 +54,7 @@ def getColumnFromFile(input,col):
 			if "nan" in line: continue
 			line = line.split()
 			val = float(line[col])
-			#print  linenumber, line
+			#print( linenumber, line)
 			rawid = int(line[-1])
 			calibMap[(rawid)] = val
 	return calibMap
@@ -162,7 +162,7 @@ def calcMeanByCCU(map):
 			c = rawidMap[id]
 			k = (c.FED, c.CCU)
 			if k not in printed:
-				print c.FED, c.CCU, c.ix, c.iy, c.iz, time
+				print(c.FED, c.CCU, c.ix, c.iy, c.iz, time)
 				printed.add(k)
 	return out_map
 
@@ -245,7 +245,7 @@ def calcMeanByiRing(m,iRings):
 		try:
 			crys = rawidMap[id]
 		except KeyError:
-			print id, "not found"
+			print(id, "not found")
 			continue
 		key = (crys.iz, crys.iRing)
 		if key in iRings:
@@ -253,6 +253,9 @@ def calcMeanByiRing(m,iRings):
 			time_sum2[key] += time*time
 			time_num[key] += 1
 	
+	if sum(time_num.values()) < 100:
+		return None, None
+
 	mean = dict()
 	stddev = dict()
 	for k in time_sum:
@@ -271,7 +274,7 @@ def calcMean(m):
 		try:
 			crys = rawidMap[id]
 		except KeyError:
-			print id, "not found"
+			print(id, "not found")
 			continue
 		if crys.iz == 0:
 			side = math.copysign(1,crys.ix)
@@ -286,6 +289,9 @@ def calcMean(m):
 			time_sum2[crys.iz] += time*time
 			time_num[crys.iz] += 1
 	
+	if sum(time_num.values()) < 100:
+		return None, None
+
 	mean = dict()
 	stddev = dict()
 	for k in time_sum:
@@ -309,7 +315,7 @@ def calcPull(m1, m2, errors):
 		try:
 			crys = rawidMap[id]
 		except KeyError:
-			print id, "not found"
+			print(id, "not found")
 			continue
 		if crys.iz == 0:
 			side = math.copysign(1,crys.ix)
@@ -339,7 +345,7 @@ def calcPull(m1, m2, errors):
 
 
 if __name__ == "__main__":
-	print "hi"
+	print("hi")
 	calib = getCalib();
-	print len(calib)
+	print(len(calib))
 

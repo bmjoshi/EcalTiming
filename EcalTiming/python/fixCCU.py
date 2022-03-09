@@ -30,7 +30,7 @@ def fixCCU(input):
 					adj = ccu_adj[key] * 25./24.
 					if key not in print_once:
 						print_once.add(key)
-						print key, line, adj
+						print(key, line, adj)
 				else:
 					adj = 0
 				out = "\t".join(start + ["%.4f" %(time - adj)] + end) + '\n'

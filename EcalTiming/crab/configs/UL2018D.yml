@@ -1,0 +1,26 @@
+InputDataset: '/AlCaPhiSym/Run2018D-v1/RAW'
+Pycfgparams:
+    - 'outputFile=timing_reco_selections.root'
+    - 'globaltag=106X_dataRun2_v28'
+Map: 'maps/run_file_map_AlCaPhiSym_Run2018D-v1_RAW.json'
+TransferOutputs: True
+TransferLogs: True
+PsetName: 'test/ecalTime_fromAlcaStream_cfg.py'
+MaxJobRunTime: 2750
+InputDBS: 'global'
+JSON: 'json/13TeV_Collisions18_DCSONLY.json'
+Splitting: 'LumiBased'
+UnitsPerJob: 100
+FilePath: '/store/user/bjoshi'
+StorageSite: 'T2_US_Florida'
+UseWhitelist: False
+UseBlacklist: False
+IgnoreGlobalBlacklist: False
+Whitelist:
+  - 'T3_CH_CERN_CAF'
+Blacklist:
+  - 'T1_US_FNAL'
+  - 'T2_UA_KIPT'
+  - 'T2_UK_London_Brunel'
+  - 'T2_CH_CSCS'
+  - 'T2_US_*'

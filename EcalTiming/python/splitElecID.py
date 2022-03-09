@@ -2,7 +2,7 @@ import os
 import sys
 argc = len(sys.argv)
 if argc < 3:
-	print "Usage: splitElecID.py input.txt output.txt"
+	print("Usage: splitElecID.py input.txt output.txt")
 	sys.exit(-1)
 
 input = sys.argv[1]

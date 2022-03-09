@@ -1,5 +1,5 @@
 /** In this file the time Map is defined
- */
+*/
 
 class EcalTimingEvent;
 class EcalCrystalTimingCalibration;

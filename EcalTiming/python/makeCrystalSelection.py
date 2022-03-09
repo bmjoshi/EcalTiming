@@ -70,7 +70,7 @@ for crystal in beam1:
 	err = ((b1ave - b2ave)**2*nBeam1*nBeam2)/(nBeam1 + nBeam2)**2 + (nBeam1*b1err**2 + nBeam2*b2err**2)/(nBeam1 + nBeam2)
 	average[crystal] = (ave,err)
 
-print len(beam1), len(beam2), len(oldcalib)
+print(len(beam1), len(beam2), len(oldcalib))
 
 from EcalTiming.EcalTiming.calibrationXML import CalibrationXML
 
@@ -82,7 +82,7 @@ for (x,y,d),(ave,err) in average.iteritems():
 for (x,y,d),(ave,err) in oldcalib.iteritems():
 	cal.addCrystal(x,y,d,ave,err)
 
-print len(cal.crystals)
+print(len(cal.crystals))
 cal.sort()
 
 cal.writeConstant("const.xml")
@@ -118,7 +118,7 @@ def plotCalibration(crystals,histoname):
 
 	return (EEM, EB, EEP)
 
-print "plot"
+print("plot")
 drawMultipleGrid(plotCalibration(cal.crystals, "new_calib"),"plots/new_calib.png", limits = [[-10,10]]*3, height = 600 )
 
 

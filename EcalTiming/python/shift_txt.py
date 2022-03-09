@@ -37,7 +37,7 @@ def shiftCalib(input):
 	for iz in hists:
 		offset[iz],__ = addFitToPlot(hists[iz])
 
-	print offset
+	print(offset)
 
 	#output = os.path.splitext(input)[0] + "-GlobalOffset.txt"
 	output = input.replace("ecalTiming","ecalTimeRelative")

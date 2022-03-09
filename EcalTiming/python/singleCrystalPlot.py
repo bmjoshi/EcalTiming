@@ -52,7 +52,7 @@ def singleCrystalDump(tree, outdir):
 	flags = ['high_skew', 'unstable_en','crys']
 
 	hists = dict()
-	print "Start of Tree Loop"
+	print("Start of Tree Loop")
 	for event in tree:
 		iz = char2int(event.iz, signed=True)
 		status = char2int(event.status)
@@ -73,7 +73,7 @@ def singleCrystalDump(tree, outdir):
 		h[2].Draw("same")
 		c.SaveAs(outdir + "/" + h[1].GetName() + ".png")
 
-	print "End of Tree Loop"
+	print("End of Tree Loop")
 	
 
 if __name__ == "__main__":
@@ -81,13 +81,13 @@ if __name__ == "__main__":
 	customROOTstyle()
 	ROOT.gROOT.SetBatch(True)
 	ROOT.gStyle.SetOptStat(1)
-	print sys.argv
+	print(sys.argv)
 	filename = sys.argv[1]
 	prefix = sys.argv[2]
 
 	dir, basename = os.path.split(filename)
 	dir = dir.split('/')
-	print dir[-1:]
+	print(dir[-1:])
 	outdir = '/'.join(dir[:-1]) + "/plots/single-crystal/" + dir[-1]
 	outdir = os.path.normpath(outdir)
 

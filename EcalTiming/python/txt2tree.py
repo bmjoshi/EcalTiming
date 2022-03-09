@@ -39,10 +39,10 @@ def txt2tree(input,tree,format):
 					xtype = float
 				data[i][0] = xtype(x)
 			tree.Fill()
-	print "Loaded tree with", tree.GetEntries()
-	print tree.Show(0)
-	print tree.Show(1)
-	print tree.Show(2)
+	print("Loaded tree with", tree.GetEntries())
+	print(tree.Show(0))
+	print(tree.Show(1))
+	print(tree.Show(2))
 
 
 
@@ -50,9 +50,9 @@ if __name__ == "__main__" :
 	#Parse Arguments
 	argc = len(sys.argv)
 	if argc < 4:
-		print "Usage: tree2txt.py <input.txt> <output.root> <tree> <format>"
-		print "<format> = name1:type1,name2:type2"
-		print "ex: tree2txt.py input.txt output.root MyTree nevents:I,energy:F"
+		print("Usage: tree2txt.py <input.txt> <output.root> <tree> <format>")
+		print("<format> = name1:type1,name2:type2")
+		print("ex: tree2txt.py input.txt output.root MyTree nevents:I,energy:F")
 		sys.exit(-1)
 
 	input = sys.argv[1]

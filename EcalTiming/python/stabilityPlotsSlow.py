@@ -11,7 +11,7 @@ detectors = {-1:"EEM", 0:"EB", 1:"EEP"}
 
 dir, basename = os.path.split(filename)
 dir = dir.split('/')
-print dir[-1:]
+print(dir[-1:])
 outdir = '/'.join(dir[:-1]) + "/plots/" + dir[-1]
 outdir = os.path.normpath(outdir)
 
@@ -49,7 +49,7 @@ def initMap(name,title,iz):
 	elif iz == 1:
 		return ROOT.TProfile2D("EEP_" + name,title,100,1,101,100,1,101)
 	else:
-		print "bad iz value",iz
+		print("bad iz value",iz)
 		return None
 
 def inittime1d(name,title,iz):
@@ -60,7 +60,7 @@ def inittime1d(name,title,iz):
 	elif iz == 1:
 		det = "EEP_"
 	else:
-		print "bad iz value",iz
+		print("bad iz value",iz)
 		return None
 	return ROOT.TH1F(det + name,title,50,-10,10)
 
@@ -72,7 +72,7 @@ def initiRing(name,title,iz):
 	elif iz == 1:
 		return ROOT.TProfile("EEP_" + name,title,39,0,39)
 	else:
-		print "bad iz value",iz
+		print("bad iz value",iz)
 		return None
 	
 def initHists(hist_dict,init_func,key, name, title):
@@ -109,10 +109,10 @@ for iz in detectors:
 	offset[iz],__ = addFitToPlot(h)
 	c.SaveAs(outdir + '/' + detectors[iz] + "_1d_nooffset.png")
 
-print "Found",tree.GetEntries(),"entries"
+print("Found",tree.GetEntries(),"entries")
 if tree.GetEntries() == 0: sys.exit(-1)
 for event in tree:
-	if not counter % (tree.GetEntries()/10): print counter, '/', tree.GetEntries()
+	if not counter % (tree.GetEntries()/10): print(counter, '/', tree.GetEntries())
 	counter += 1
 	if event.num == 0: continue
 	# make dictionary key
@@ -148,7 +148,7 @@ for event in tree:
 	#if event.rawid in oldCalib:
 	#	t += oldCalib[event.rawid]
 	#else:
-	#	print "Rawid not found", event.rawid 
+	#	print("Rawid not found", event.rawid )
 
 for key in time:
 	time[key].SetZTitle("[ns]")
