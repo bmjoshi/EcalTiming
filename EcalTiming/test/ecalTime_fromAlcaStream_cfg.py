@@ -145,11 +145,11 @@ process.load('EcalTiming.EcalTiming.ecalLocalRecoSequenceAlCaStream_cff')
 process.load('EcalTiming.EcalTiming.ecalLocalRecoSequenceAlCaP0Stream_cff')
 
 if(options.streamName=="AlCaP0"):
-    process.ecalMultiFitUncalibRecHit.EBdigiCollection = cms.InputTag("hltAlCaPi0EBRechitsToDigis","pi0EBDigis")
-    process.ecalMultiFitUncalibRecHit.EEdigiCollection = cms.InputTag("hltAlCaPi0EERechitsToDigis","pi0EEDigis")
+    process.ecalMultiFitUncalibRecHit.cpu.EBdigiCollection = cms.InputTag("hltAlCaPi0EBRechitsToDigis","pi0EBDigis")
+    process.ecalMultiFitUncalibRecHit.cpu.EEdigiCollection = cms.InputTag("hltAlCaPi0EERechitsToDigis","pi0EEDigis")
 else:
-    process.ecalMultiFitUncalibRecHit.EBdigiCollection = cms.InputTag("hltEcalPhiSymFilter","phiSymEcalDigisEB")
-    process.ecalMultiFitUncalibRecHit.EEdigiCollection = cms.InputTag("hltEcalPhiSymFilter","phiSymEcalDigisEE")
+    process.ecalMultiFitUncalibRecHit.cpu.EBdigiCollection = cms.InputTag("hltEcalPhiSymFilter","phiSymEcalDigisEB")
+    process.ecalMultiFitUncalibRecHit.cpu.EEdigiCollection = cms.InputTag("hltEcalPhiSymFilter","phiSymEcalDigisEE")
 
 
 ## Raw to Digi
@@ -357,9 +357,7 @@ else:
     process.endp = cms.EndPath(process.RECOoutput)
 
 process.p = cms.Path(process.seq)
-'''
 from datetime import datetime
 processDumpFilename = "processDump" + datetime.now().strftime("%M%S%f") + ".py"
 processDumpFile = open(processDumpFilename, 'w')
-print(>> processDumpFile, process.dumpPython())
-'''
+#print>> processDumpFile, process.dumpPython()

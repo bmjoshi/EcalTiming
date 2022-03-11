@@ -31,12 +31,14 @@ using namespace cms;
 // constructors and destructor
 //
 EcalTimingCalibProducer::EcalTimingCalibProducer(const edm::ParameterSet& iConfig) :
-   _maxLoop(iConfig.getParameter<unsigned int>("maxLoop")),
    _isSplash(iConfig.getParameter<bool>("isSplash")),
+   _saveTimingEvents(iConfig.getParameter<bool>("saveTimingEvents")),
    _makeEventPlots(iConfig.getParameter<bool>("makeEventPlots")),
-   _ecalRecHitsEBTAG(iConfig.getParameter<edm::InputTag>("recHitEBCollection")),
-   _ecalRecHitsEETAG(iConfig.getParameter<edm::InputTag>("recHitEECollection")),
-   _recHitFlags(iConfig.getParameter<std::vector<int> >("recHitFlags")),
+   _applyAmpThresEB(iConfig.getParameter<bool>("applyAmpThresEB")),
+   _applyAmpThresEE(iConfig.getParameter<bool>("applyAmpThresEE")),
+   _ebUncalibRechits(consumes<EcalUncalibratedRecHitCollection>(iConfig.getParameter<edm::InputTag>("ebUncalibRechits"))),
+   _eeUncalibRechits(consumes<EcalUncalibratedRecHitCollection>(iConfig.getParameter<edm::InputTag>("eeUncalibRechits"))),
+   _timingEvents(consumes<EcalTimingCollection>(iConfig.getParameter<edm::InputTag>("timingCollection"))),
    _recHitMin(iConfig.getParameter<unsigned int>("recHitMinimumN")),
 
    ///\todo the min energy should be in ADC not in energy
@@ -44,8 +46,17 @@ EcalTimingCalibProducer::EcalTimingCalibProducer(const edm::ParameterSet& iConfi
    _minRecHitEnergyNStep(iConfig.getParameter<double>("minRecHitEnergyNStep")),
    _energyThresholdOffsetEB(iConfig.getParameter<double>("energyThresholdOffsetEB")),
    _energyThresholdOffsetEE(iConfig.getParameter<double>("energyThresholdOffsetEE")),
-   _chi2ThresholdOffsetEB(iConfig.getParameter<double>("chi2ThresholdOffsetEB")),//added
-   _chi2ThresholdOffsetEE(iConfig.getParameter<double>("chi2ThresholdOffsetEE")),//added
+   _ampFrac(iConfig.getParameter<double>("ampFrac")),
+   _ampCut_barrelP(iConfig.getParameter<vector<double> >("ampCut_barrelP")),
+   _ampCut_barrelM(iConfig.getParameter<vector<double> >("ampCut_barrelM")),
+   _ampCut_endcapP(iConfig.getParameter<vector<double> >("ampCut_endcapP")),
+   _ampCut_endcapM(iConfig.getParameter<vector<double> >("ampCut_endcapM")),
+   _eThresholdsEB_par0(iConfig.getParameter<vector<double> >("eThresholdsEB_par0")),
+   _eThresholdsEB_par1(iConfig.getParameter<vector<double> >("eThresholdsEB_par1")), 
+   _eThresholdsEB_par2(iConfig.getParameter<vector<double> >("eThresholdsEB_par2")),
+   _eThresholdsEE_par0(iConfig.getParameter<vector<double> >("eThresholdsEE_par0")),
+   _eThresholdsEE_par1(iConfig.getParameter<vector<double> >("eThresholdsEE_par1")), 
+   _eThresholdsEE_par2(iConfig.getParameter<vector<double> >("eThresholdsEE_par2")),
    _minEntries(iConfig.getParameter<unsigned int>("minEntries")),
    _globalOffset(iConfig.getParameter<double>("globalOffset")),
    _storeEvents(iConfig.getParameter<bool>("storeEvents")),
@@ -54,15 +65,6 @@ EcalTimingCalibProducer::EcalTimingCalibProducer(const edm::ParameterSet& iConfi
    _maxSkewnessForDump(iConfig.getParameter<double>("maxSkewnessForDump")),
    _ringTools(EcalRingCalibrationTools())
 {
-   //_ecalRecHitsEBToken = edm::consumes<EcalRecHitCollection>(iConfig.getParameter< edm::InputTag > ("ebRecHitsLabel"));
-   //the following line is needed to tell the framework what
-   // data is being produced
-   //if(_produceNewCalib) {
-   //	setWhatProduced(this,  &EcalTimingCalibProducer::produceCalibConstants);
-   //	//setWhatProduced(this, &EcalTimingCalibProducer::produceCalibErrors);
-   //	setWhatProduced(this, &EcalTimingCalibProducer::produceOffsetConstant);
-   //}
-   //now do what ever other initialization is needed
 }
 
 
@@ -82,7 +84,6 @@ EcalTimingCalibProducer::~EcalTimingCalibProducer()
 void EcalTimingCalibProducer::beginJob()
 {
    std::cout << "Begin job: createConstants" << std::endl;
-   //createConstants(iSetup);
 
    // Initialize histograms at start of Loop
    char histDirName[100];
@@ -95,21 +96,51 @@ void EcalTimingCalibProducer::beginJob()
 
    // reset the calibration
    _timeCalibMap.clear();
+
 }
 
 
-bool EcalTimingCalibProducer::addRecHit(const EcalRecHit& recHit, EventTimeMap& eventTimeMap_)
+bool EcalTimingCalibProducer::addRecHit(const EcalTimingEvent& timeEvent, EventTimeMap& eventTimeMap_, const EcalUncalibratedRecHitCollection *ebUncalibRechitsCollection, const EcalUncalibratedRecHitCollection *eeUncalibRechitsCollection)
 {
-   //check if rechit is valid
-   if(! recHit.checkFlags(_recHitFlags)) return false;
+   float energyThreshold = getEnergyThreshold(timeEvent.detid()); 
+   int iRing = _ringTools.getRingIndexInSubdet(timeEvent.detid());
+   if(timeEvent.detid().subdetId() == EcalBarrel)
+   {
 
-   std::pair<float, float> energyThreshold = getEnergyThreshold(recHit.detid()); // first->energy threshold, second->chi2 threshold
-   if( (recHit.energy() < (energyThreshold.first)) || (recHit.chi2()>energyThreshold.second)) return false; // minRecHitEnergy in ADC for EB - the minChi2 value has to be implemented separately like the minEnergy
+      if( timeEvent.energy() < (energyThreshold) ) return false;
+      if(_applyAmpThresEB == true)
+      {
+         float amplitude = (*ebUncalibRechitsCollection->find(timeEvent.detid())).amplitude();
+         float maxOOTAmp = 0.;
+         for(int bx=0;bx<10;bx++)
+            if((*ebUncalibRechitsCollection->find(timeEvent.detid())).outOfTimeAmplitude(bx) > maxOOTAmp) maxOOTAmp = (*ebUncalibRechitsCollection->find(timeEvent.detid())).outOfTimeAmplitude(bx);
+         //EBDetId hitDetId = timeEvent.detid();
+         if(iRing<0 && amplitude<_ampCut_barrelM[abs(iRing)]) return false; 
+         if(iRing>0 && amplitude<_ampCut_barrelP[iRing]) return false; 
+         if(amplitude/maxOOTAmp < _ampFrac && maxOOTAmp>0.) return false;
+         //std::cout << "EB: " << hitDetId.ieta() << " " << iRing << " " << _ampCut_barrelM[abs(iRing)] << " " << amplitude << std::endl;
+      }
+
+   }else{
+
+      if( timeEvent.energy() < (energyThreshold) ) return false;
+      if(_applyAmpThresEE == true)
+      {
+         float amplitude = (*eeUncalibRechitsCollection->find(timeEvent.detid())).amplitude();
+         float maxOOTAmp = 0.;
+         for(int bx=0;bx<10;bx++)
+            if((*eeUncalibRechitsCollection->find(timeEvent.detid())).outOfTimeAmplitude(bx) > maxOOTAmp) maxOOTAmp = (*eeUncalibRechitsCollection->find(timeEvent.detid())).outOfTimeAmplitude(bx);
+         EEDetId hitDetId = timeEvent.detid();
+         if(hitDetId.zside()<0 && amplitude<_ampCut_endcapM[iRing]) return false; 
+         if(hitDetId.zside()>0 && amplitude<_ampCut_endcapP[iRing]) return false; 
+         if(amplitude/maxOOTAmp < _ampFrac && maxOOTAmp>0.) return false;
+         //std::cout << "EE: " << iRing << " " << _ampCut_endcapM[iRing] << " " << amplitude << std::endl;
+      }
+
+   }
 
    // add the EcalTimingEvent to the EcalCreateTimeCalibrations
-   EcalTimingEvent timeEvent(recHit);
-   _eventTimeMap.emplace(recHit.detid(), timeEvent);
-
+   _eventTimeMap.emplace(timeEvent.detid(), timeEvent);
 
    return true;
 }
@@ -117,28 +148,28 @@ bool EcalTimingCalibProducer::addRecHit(const EcalRecHit& recHit, EventTimeMap& 
 /**
   fills the energy map and timing maps for EB, EE+ and EE-
   */
-void EcalTimingCalibProducer::plotRecHit(const EcalTimingEvent& recHit)
+void EcalTimingCalibProducer::plotRecHit(const EcalTimingEvent& timeEvent)
 {
-   if(recHit.detid().subdetId() == EcalBarrel) {
-      EBDetId id(recHit.detid());
+   if(timeEvent.detid().subdetId() == EcalBarrel) {
+      EBDetId id(timeEvent.detid());
       // Fill Rechit Energy
-      Event_EneMapEB_->Fill(id.ieta(), id.iphi(), recHit.energy()); // 2D energy map
-      Event_TimeMapEB_->Fill(id.ieta(), id.iphi(), recHit.time()); // 2D time map
-      RechitEnergyTimeEB->Fill(recHit.energy(), recHit.time());
+      Event_EneMapEB_->Fill(id.ieta(), id.iphi(), timeEvent.energy()); // 2D energy map
+      Event_TimeMapEB_->Fill(id.ieta(), id.iphi(), timeEvent.time()); // 2D time map
+      RechitEnergyTimeEB->Fill(timeEvent.energy(), timeEvent.time());
       OccupancyEB_->Fill(id.ieta(), id.iphi(), 1);
    } else {
       // create EEDetId
-      EEDetId id(recHit.detid());
+      EEDetId id(timeEvent.detid());
       if(id.zside() < 0) {
-         Event_EneMapEEM_->Fill(id.ix(), id.iy(), recHit.energy());
-         Event_TimeMapEEM_->Fill(id.ix(), id.iy(), recHit.time());
-         RechitEnergyTimeEEM->Fill(recHit.energy(), recHit.time());
+         Event_EneMapEEM_->Fill(id.ix(), id.iy(), timeEvent.energy());
+         Event_TimeMapEEM_->Fill(id.ix(), id.iy(), timeEvent.time());
+         RechitEnergyTimeEEM->Fill(timeEvent.energy(), timeEvent.time());
          OccupancyEEM_->Fill(id.ix(), id.iy(), 1);
 
       } else {
-         Event_EneMapEEP_->Fill(id.ix(), id.iy(), recHit.energy());
-         Event_TimeMapEEP_->Fill(id.ix(), id.iy(), recHit.time());
-         RechitEnergyTimeEEP->Fill(recHit.energy(), recHit.time());
+         Event_EneMapEEP_->Fill(id.ix(), id.iy(), timeEvent.energy());
+         Event_TimeMapEEP_->Fill(id.ix(), id.iy(), timeEvent.time());
+         RechitEnergyTimeEEP->Fill(timeEvent.energy(), timeEvent.time());
          OccupancyEEP_->Fill(id.ix(), id.iy(), 1);
       }
    }
@@ -182,12 +213,28 @@ bool EcalTimingCalibProducer::filter(edm::Event& iEvent, const edm::EventSetup& 
    iSetup.get<EcalMappingRcd>().get(hElecMap);
    elecMap_ = hElecMap.product();
 
-   // here the getByToken of the rechits
-   edm::Handle<EBRecHitCollection> ebRecHitHandle;
-   iEvent.getByLabel(_ecalRecHitsEBTAG, ebRecHitHandle);
-   edm::Handle<EERecHitCollection> eeRecHitHandle;
-   iEvent.getByLabel(_ecalRecHitsEETAG, eeRecHitHandle);
+   // here the getByToken of the uncalibrechits
+   edm::Handle<EcalUncalibratedRecHitCollection> ebUncalibRechits;
+   iEvent.getByToken(_ebUncalibRechits,ebUncalibRechits);
+   const EcalUncalibratedRecHitCollection *ebUncalibRechitsCollection = NULL;
+   ebUncalibRechitsCollection = ebUncalibRechits.product();
 
+   edm::Handle<EcalUncalibratedRecHitCollection> eeUncalibRechits;
+   iEvent.getByToken(_eeUncalibRechits,eeUncalibRechits);
+   const EcalUncalibratedRecHitCollection *eeUncalibRechitsCollection = NULL;
+   eeUncalibRechitsCollection = eeUncalibRechits.product();
+
+   // here the getByToken of the rechits
+   edm::Handle<EcalTimingCollection> timingCollection;
+   iEvent.getByToken(_timingEvents, timingCollection);
+#ifdef DEBUG
+   std::cout << "Nhits\t" << timingCollection->size() << std::endl;
+#endif
+
+   int run = iEvent.id().run();
+   int lumi = iEvent.luminosityBlock();
+   int event = iEvent.id().event();
+   int bx = iEvent.bunchCrossing();
 
    _eventTimeMap.clear(); // reset the map of time from recHits for this event
 
@@ -200,24 +247,22 @@ bool EcalTimingCalibProducer::filter(edm::Event& iEvent, const edm::EventSetup& 
    timeEEP.clear(); // reset the map for one ring in EE+
 
    // loop over the recHits and add those passing the selection to the list of recHits to be used for timing:  eventTimeMap
-   // recHit_itr is of type: edm::Handle<EcalRecHitCollection>::const_iterator
-   for(auto  recHit_itr = ebRecHitHandle->begin(); recHit_itr != ebRecHitHandle->end(); ++recHit_itr) {
+   // timeEvent is of type: edm::Handle<EcalTimingEvent>::const_iterator
+   for(auto  timeEvent : *timingCollection) {
       // add the recHit to the list of recHits used for calibration (with the relative information)
-      if(addRecHit(*recHit_itr, _eventTimeMap)) {
-         timeEB.add(EcalTimingEvent(*recHit_itr), false);
-      }
-   }
-
-   // same for EE
-   for(auto recHit_itr = eeRecHitHandle->begin(); recHit_itr != eeRecHitHandle->end(); ++recHit_itr) {
-      // add the recHit to the list of recHits used for calibration (with the relative information)
-      if(addRecHit(*recHit_itr, _eventTimeMap)) { // true if the recHit passes the selection and then added to the timeCalibMap
-         // create EEDetId
-         EEDetId id(recHit_itr->detid());
-         if(id.zside() < 0) {
-            timeEEM.add(EcalTimingEvent(*recHit_itr), false);
+#ifdef DEBUG
+      std::cout << timeEvent << std::endl;
+#endif
+      if(addRecHit(timeEvent, _eventTimeMap,ebUncalibRechitsCollection,eeUncalibRechitsCollection)) {
+         if( timeEvent.detid().subdetId() == EcalBarrel) {
+            timeEB.add(EcalTimingEvent(timeEvent), false);
          } else {
-            timeEEP.add(EcalTimingEvent(*recHit_itr), false);
+            EEDetId id(timeEvent.detid());
+            if(id.zside() < 0) {
+               timeEEM.add(EcalTimingEvent(timeEvent), false);
+            } else {
+               timeEEP.add(EcalTimingEvent(timeEvent), false);
+            }
          }
       }
    }
@@ -253,14 +298,23 @@ bool EcalTimingCalibProducer::filter(edm::Event& iEvent, const edm::EventSetup& 
    // Add adjusted timeEvents to CorrectionsMap
    for(auto const & it : _eventTimeMap) {
       // if it is a splash event, set a global offset shift such that the time is coherent between different events
-      EcalTimingEvent event = _isSplash ? correctGlobalOffset(it.second, splashDir, bunchCorr) : it.second;
+      EcalTimingEvent tEvent = _isSplash ? correctGlobalOffset(it.second, splashDir, bunchCorr) : it.second;
 
-      if(_makeEventPlots) plotRecHit(event);
-      _timeCalibMap[it.first].add(event,_storeEvents);
+      unsigned int elecID = getElecID(tEvent.detid());
+      int iRing = _ringTools.getRingIndexInSubdet(tEvent.detid());
+      if( _saveTimingEvents) {
+         if( tEvent.detid().subdetId() == EcalBarrel) {
+            EBDetId id(tEvent.detid());
+            dumpTimingEventToTree(timingEventsTree, tEvent, id.rawId(), id.ieta(), id.iphi(), 0, elecID, iRing, run, lumi, event, bx);
+         } else {
+            EEDetId id(tEvent.detid());
+            dumpTimingEventToTree(timingEventsTree, tEvent, id.rawId(), id.ix(), id.iy(), id.zside(), elecID, iRing, run, lumi, event, bx);
+         }
+      } 
+      _timeCalibMap[it.first].add(tEvent,_storeEvents);
 
       //Find the CCU(tower) that this crystal belongs to
-      unsigned int elecID = getElecID(it.first);
-      _HWCalibrationMap[elecID].add(event,false);
+      _HWCalibrationMap[elecID].add(tEvent,false);
 
    }
 
@@ -275,7 +329,6 @@ void EcalTimingCalibProducer::endJob()
 {
    std::cout << "EndOfLoop " << std::endl;
 
-
    // calculate the calibration constants
 
    // set the values in _calibConstants, _calibErrors, _offsetConstant
@@ -286,7 +339,6 @@ void EcalTimingCalibProducer::endJob()
       if	(abs(it.second.mean()) > HW_UNIT * 1.5) std::cout <<  "HW: " << it.first << ' ' << it.second.mean() << std::endl;
    }
 #endif
-
    // remove the entries OOT (time > n_sigma)
    float n_sigma = 2.; /// \todo remove hard coded number
    for(auto calibRecHit_itr = _timeCalibMap.begin(); calibRecHit_itr != _timeCalibMap.end(); ++calibRecHit_itr) {
@@ -305,8 +357,8 @@ void EcalTimingCalibProducer::endJob()
 
          // check if result is stable as function of energy
          std::vector< std::pair<float, EcalCrystalTimingCalibration*> > energyStability;
-         std::pair <float, float> energyThreshold = getEnergyThreshold(calibRecHit_itr->first);
-         if(! calibRecHit_itr->second.isStableInEnergy(energyThreshold.first, energyThreshold.first + _minRecHitEnergyStep * _minRecHitEnergyNStep, _minRecHitEnergyStep, energyStability)) {
+         float energyThreshold = getEnergyThreshold(calibRecHit_itr->first);
+         if(! calibRecHit_itr->second.isStableInEnergy(energyThreshold, energyThreshold + _minRecHitEnergyStep * _minRecHitEnergyNStep, _minRecHitEnergyStep, energyStability)) {
             ds |= DS_UNSTABLE_EN;
          }
          FillEnergyStabilityHists(calibRecHit_itr, energyStability);
@@ -321,7 +373,7 @@ void EcalTimingCalibProducer::endJob()
       if((calibRecHit_itr->first.rawId() == EBCRYex) ||
             (calibRecHit_itr->first.rawId() == EECRYex)) ds |= DS_CRYS;
 
-      int iRing = _ringTools.getRingIndex(calibRecHit_itr->first);
+      int iRing = _ringTools.getRingIndexInSubdet(calibRecHit_itr->first);
 
       if(calibRecHit_itr->first.subdetId() == EcalBarrel && iRing == EBRING) ds |= DS_RING;
       else if(calibRecHit_itr->first.subdetId() == EcalEndcap && (iRing == EEmRING || iRing == EEpRING )) ds |= DS_RING;
@@ -459,7 +511,7 @@ void EcalTimingCalibProducer::FillCalibrationCorrectionHists(EcalTimeCalibration
       iz = id.zside();
    }
 
-   int iRing = _ringTools.getRingIndex(cal_itr->first);
+   int iRing = _ringTools.getRingIndexInSubdet(cal_itr->first);
    cal_itr->second.dumpCalibToTree(timingTree, rawid, ix, iy, iz, getElecID(cal_itr->first), iRing);
 }
 
@@ -500,7 +552,7 @@ void EcalTimingCalibProducer::FillEnergyStabilityHists(EcalTimeCalibrationMap::c
       iz = id.zside();
    }
 
-   int iRing = _ringTools.getRingIndex(cal_itr->first);
+   int iRing = _ringTools.getRingIndexInSubdet(cal_itr->first);
 
    // Add min_energy to the tree which gets filld inside the dump function
    float min_energy = -1.0;
@@ -579,7 +631,63 @@ void EcalTimingCalibProducer::initTree(TFileDirectory fdir)
 {
    dumpTree = fdir.make<TTree>("dumpTree", "");
    timingTree = fdir.make<TTree>("timingTree", "");
+   timingEventsTree = fdir.make<TTree>("timingEventsTree", "");
    energyStabilityTree = fdir.make<TTree>("energyStabilityTree", "");
+}
+
+void EcalTimingCalibProducer::dumpTimingEventToTree(TTree *tree, EcalTimingEvent tEvent, uint32_t rawid_, int ix_, int iy_, int iz_, unsigned int elecID_, int iRing_, int run_, int lumi_, int event_, int bx_) 
+{
+   Float_t  time = tEvent.time();
+   Float_t  energy = tEvent.energy();
+   uint32_t rawid(rawid_);
+   Int_t    ix(ix_);
+   Int_t    iy(iy_); 
+   Int_t    iz(iz_);
+   UShort_t elecID(elecID_);
+   Int_t iRing(iRing_);
+   Int_t run(run_);
+   Int_t lumi(lumi_);
+   Int_t event(event_);
+   Int_t bx(bx_);
+
+   if(tree->GetBranch("rawid") == NULL) tree->Branch("rawid", &rawid, "rawid/i");
+   else tree->SetBranchAddress("rawid", &rawid);
+
+   if(tree->GetBranch("ix") == NULL) tree->Branch("ix", &ix, "ix/I");
+   else tree->SetBranchAddress("ix", &ix);
+
+   if(tree->GetBranch("iy") == NULL) tree->Branch("iy", &iy, "iy/I");
+   else tree->SetBranchAddress("iy", &iy);
+
+   if(tree->GetBranch("iz") == NULL) tree->Branch("iz", &iz, "iz/I");
+   else tree->SetBranchAddress("iz", &iz);
+
+   if(tree->GetBranch("time") == NULL) tree->Branch("time", &time, "time/F");
+   else tree->SetBranchAddress("time", &time);
+
+   if(tree->GetBranch("energy") == NULL) tree->Branch("energy", &energy, "energy/F");
+   tree->SetBranchAddress("energy", &energy);
+
+   if(tree->GetBranch("elecID") == NULL) tree->Branch("elecID", &elecID, "elecID/s");
+   else tree->SetBranchAddress("elecID", &elecID);
+
+   if(tree->GetBranch("iRing") == NULL) tree->Branch("iRing", &iRing, "iRing/I");
+   else tree->SetBranchAddress("iRing", &iRing);
+
+   if(tree->GetBranch("run") == NULL) tree->Branch("run", &run, "run/I");
+   else tree->SetBranchAddress("run", &run);
+
+   if(tree->GetBranch("lumi") == NULL) tree->Branch("lumi", &lumi, "lumi/I");
+   else tree->SetBranchAddress("lumi", &lumi);
+
+   if(tree->GetBranch("event") == NULL) tree->Branch("event", &event, "event/I");
+   else tree->SetBranchAddress("event", &event);
+
+   if(tree->GetBranch("bx") == NULL) tree->Branch("bx", &bx, "bx/I");
+   else tree->SetBranchAddress("bx", &bx);
+
+
+   tree->Fill();
 }
 
 //define this as a plug-in

@@ -33,9 +33,9 @@ def txt2tree(input,tree,format):
 			for i in range(ncolumns):
 				name,t = types[i]
 				x = line[i]
-				if type_map[t] is 'i':
+				if type_map[t]=='i':
 					xtype = int
-				if type_map[t] is 'f':
+				if type_map[t]=='f':
 					xtype = float
 				data[i][0] = xtype(x)
 			tree.Fill()

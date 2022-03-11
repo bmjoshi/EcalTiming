@@ -1,24 +1,23 @@
 from RecoLocalCalo.Configuration.ecalLocalRecoSequence_cff import *
 
-ecalLocalRecoSequenceAlCaStream = cms.Sequence (ecalMultiFitUncalibRecHit * 
-                                                    ecalRecHit)
+ecalLocalRecoSequenceAlCaStream = cms.Sequence (ecalMultiFitUncalibRecHitTask, ecalRecHitTask)
 
-ecalMultiFitUncalibRecHit.EBdigiCollection = cms.InputTag("hltEcalPhiSymFilter","phiSymEcalDigisEB")
-ecalMultiFitUncalibRecHit.EEdigiCollection = cms.InputTag("hltEcalPhiSymFilter","phiSymEcalDigisEE")
+ecalMultiFitUncalibRecHit.cpu.EBdigiCollection = cms.InputTag("hltEcalPhiSymFilter","phiSymEcalDigisEB")
+ecalMultiFitUncalibRecHit.cpu.EEdigiCollection = cms.InputTag("hltEcalPhiSymFilter","phiSymEcalDigisEE")
 
-ecalMultiFitUncalibRecHit.algoPSet = cms.PSet(
+ecalMultiFitUncalibRecHit.cpu.algoPSet = cms.PSet(
       useLumiInfoRunHeader = cms.bool(False),
       activeBXs = cms.vint32(-5,-4,-3,-2,-1,0,1,2,3,4)
       )
 
-ecalRecHit.killDeadChannels = False
-ecalRecHit.recoverEBFE = False
-ecalRecHit.recoverEEFE = False
+ecalRecHit.cpu.killDeadChannels = False
+ecalRecHit.cpu.recoverEBFE = False
+ecalRecHit.cpu.recoverEEFE = False
 #copied
-ecalRecHit.killDeadChannels = cms.bool( False )
-ecalRecHit.recoverEBVFE = cms.bool( False )
-ecalRecHit.recoverEEVFE = cms.bool( False )
-ecalRecHit.recoverEBFE = cms.bool( False )
-ecalRecHit.recoverEEFE = cms.bool( False )
-ecalRecHit.recoverEEIsolatedChannels = cms.bool( False )
-ecalRecHit.recoverEBIsolatedChannels = cms.bool( False )
+ecalRecHit.cpu.killDeadChannels = cms.bool( False )
+ecalRecHit.cpu.recoverEBVFE = cms.bool( False )
+ecalRecHit.cpu.recoverEEVFE = cms.bool( False )
+ecalRecHit.cpu.recoverEBFE = cms.bool( False )
+ecalRecHit.cpu.recoverEEFE = cms.bool( False )
+ecalRecHit.cpu.recoverEEIsolatedChannels = cms.bool( False )
+ecalRecHit.cpu.recoverEBIsolatedChannels = cms.bool( False )

@@ -4,10 +4,14 @@
 #RUNPERIOD=Run2015B-v1
 #2015C
 #RUNLIST="254231 254232 254790 254879" #254852 
-RUNPERIOD=Run2015C-v1
+RUNPERIOD=2016A-v1
 
 #RUNLIST="254292 254293 254294 254319 254332 254341 254342 254349 254458 254459 254608"
-RUNLIST="254307 255981 256001 256002 256003 256167 256169 256171 256215 256237" #256245 256349 256350 256355 256406"
+#RUNLIST="254307 255981 256001 256002 256003 256167 256169 256171 256215 256237" #256245 256349 256350 256355 256406"
+
+#2016A runlist
+RUNLIST="270639 270862 270886 270887 271045 271047 271048 271049 271082 271084 271087 271142 271143 271144 271161 271167 271168 271169 271170 271188 271191 271192 271193 271195 271336 271337 271338 271342"
+RUNLIST="271195"
 
 STREAM=AlCaPhiSym
 NEVENTS=-1
@@ -93,19 +97,21 @@ fi
 
 for RUN in ${RUNLIST}
 do
-	if ! grep $RUN $JSON > /dev/null;
+	echo "=== RUN = ${RUN}"
+	if [ $JSON ] && ! grep $RUN $JSON > /dev/null;
 	then
 		echo $RUN not in JSON $JSON
 		continue
 	fi
-	echo "=== RUN = ${RUN}"
-	OUTDIR=$EOSDIR/${STREAM}-${RUN}/
+	OUTDIR=$EOSDIR/${RUNPERIOD}/${STREAM}-${RUN}/
+	$eos mkdir ${EOSDIR}
 	$eos mkdir ${OUTDIR}
-	AFSDIR=/afs/cern.ch/work/p/phansen/public/EcalTiming/analysis/${STREAM}-${RUN}/
+	AFSDIR=/afs/cern.ch/work/p/phansen/public/EcalTiming/analysis/${RUNPERIOD}/${STREAM}-${RUN}/
 	mkdir -p ${AFSDIR}
 
 	if [[ $STEP == *"RECO"* ]]
 	then
+                echo "doing reco"
 		RECO="_RECO"
 		nfiles=`das_client.py --query="file dataset=/${STREAM}/${RUNPERIOD}/RAW run=${RUN} | count(file.name)" | sed '2 d'`
 		nfiles=${nfiles:19}
@@ -115,13 +121,14 @@ do
 			continue
 		fi
 
-		#echo Will run over $nfiles files
+		echo Will run over $nfiles files
 		filelist=`das_client.py --query="file dataset=/${STREAM}/${RUNPERIOD}/RAW run=${RUN}" --limit=${nfiles} | sed '2 d'`
 		# for file in ${filelist}
 		# do
 		# das_client.py --query="file=${file} | sum(file.nevents)"
 		# done
 	else
+                echo Not reco
 		#filelist=`grep ${RUN}  ~shervin/public/4peter/fileMap-sorted.dat  | cut -d ' ' -f2`
 		#filelist=(${OUTDIR}/ecalTiming_*_numEvent50000_RECO.root)
 		#filelist=${filelist[@]/#/file://}
@@ -144,10 +151,6 @@ do
 	i=0
 	for file in $filelist
 	do
-		if [ "$i" -gt 5 ] 
-		then
-			continue
-		fi
 		name=${i}
 		#let skip=$EVENTSPERJOB*$job
 		skip=0
@@ -165,7 +168,7 @@ do
 		echo "check if file exists"
 		if $eos ls ${OUTDIR}/${tmp_file_real}
 		then
-			echo "File exists"
+			echo File exists: ${OUTDIR}/${tmp_file_real}
 			let i=i+1
 			continue
 		fi

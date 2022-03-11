@@ -10,45 +10,72 @@
  * Description: basic timing information
  */
 
-class EcalTimingEvent : public EcalRecHit
+#define MAX_TIME 32.767
+#define MAX_ENERGY 655.35
+
+class EcalTimingEvent
 {
-   public:
+public:
+        EcalTimingEvent()
+        {
+           detid_ = DetId(0);
+           setTime(MAX_TIME);
+           setEnergy(MAX_ENERGY);
+        }
+	EcalTimingEvent(DetId id) {
+           detid_ = id;
+           setTime(MAX_TIME);
+           setEnergy(MAX_ENERGY);
+        }
+	EcalTimingEvent(const EcalRecHit& rec) {
+           detid_ = rec.detid();
+           setTime(rec.time());
+           setEnergy(rec.energy());
+        }
 
-      ///copy constructor
-      EcalTimingEvent(const EcalRecHit& rec): EcalRecHit(rec) {};
+        /// Time is stored in a int16_t in ps. time() returns a float in ns
+        float time() const{ return float(time_)/1000.0f; }
+        /// Energy is stored in a uint16_t in 10's of MeV. energy() returns a float in GeV
+        float energy() const { return float(energy_)/100.0f; }
+        const DetId& detid() const { return detid_; }
 
-      /* EcalRecHit(rec.detid(), rec.energy(), rec.time(), 0, 0){ */
-      /* 		setChi2(rec.chi2()); */
-      /* 		setEnergyError(rec.energyError()); */
-      /* 		uint32_t timeErrorBits = getMasked(extra_, 24, 8); */
-      /* 		extra_ = setMasked(rec.extra_, timeErrBits & 0xFF, 24, 8); */
-      friend std::ostream& operator << (std::ostream& os, const EcalTimingEvent& event)
-      {
-         if(event.detid().subdetId() == EcalBarrel) {
-            EBDetId id(event.detid());
-            os  << id.ieta() << "\t" << id.iphi() << "\t" << id.zside() << "\t";
-         } else {
-            EEDetId id(event.detid());
-            os << id.ix() << "\t" << id.iy() << "\t" << id.zside() << "\t";
-         }
+        void setTime(float t);
+        void setEnergy(float e);
 
-         os << event.time() << "\t" << event.timeError() << "\t" << event.energy();
-         return os;
-      }
 
-      bool operator== (const EcalTimingEvent &first) const
-      {
-         // only check amp, time, sigmaT
-         if (first.energy() == this->energy() &&
-               first.time() == this->time() &&
-               first.timeError() == this->timeError()) {
-            return true;
-         }
+private:
+        DetId detid_;
+        int16_t time_;
+        uint16_t energy_;
+public:
+	friend std::ostream& operator << (std::ostream& os, const EcalTimingEvent& event)
+	{
+		if(event.detid().subdetId() == EcalBarrel) {
+			EBDetId id(event.detid());
+			os  << id.ieta() << "\t" << id.iphi() << "\t" << id.zside() << "\t";
+		} else {
+			EEDetId id(event.detid());
+			os << id.ix() << "\t" << id.iy() << "\t" << id.zside() << "\t";
+		}
 
-         return false;
-      }
+		os << event.time() << "\t" << event.energy();
+		return os;
+	}
+
+	bool operator== (const EcalTimingEvent &first) const
+	{
+		// only check amp, time, sigmaT
+		if (first.energy() == this->energy() &&
+		        first.time() == this->time())
+                {
+			return true;
+		}
+		return false;
+	}
 
 };
+
+typedef std::vector<EcalTimingEvent> EcalTimingCollection;
 
 #endif
 

@@ -175,7 +175,8 @@ void EcalCrystalTimingCalibration::dumpCalibToTree(TTree *tree, int rawid_, int 
 void EcalCrystalTimingCalibration::dumpToTree(TTree *tree, int ix_, int iy_, int iz_, unsigned int status_, unsigned int elecID_, int iRing_)
 {
 	//assert(tree->GetEntries() == 0);
-	Float_t time, timeError, energy, chiSquare;
+	Float_t time, energy;
+	//Float_t timeError, chiSquare;
 	UInt_t rawid;
 
 	Short_t  ix(ix_);
@@ -200,8 +201,8 @@ void EcalCrystalTimingCalibration::dumpToTree(TTree *tree, int ix_, int iy_, int
 	if(tree->GetBranch("time") == NULL) tree->Branch("time", &time, "time/F");
 	else tree->SetBranchAddress("time", &time);
 
-	if(tree->GetBranch("timeError") == NULL) tree->Branch("timeError", &timeError, "timeError/F");
-	tree->SetBranchAddress("timeError", &timeError);
+	//if(tree->GetBranch("timeError") == NULL) tree->Branch("timeError", &timeError, "timeError/F");
+	//tree->SetBranchAddress("timeError", &timeError);
 
 	if(tree->GetBranch("energy") == NULL) tree->Branch("energy", &energy, "energy/F");
 	tree->SetBranchAddress("energy", &energy);
@@ -215,15 +216,15 @@ void EcalCrystalTimingCalibration::dumpToTree(TTree *tree, int ix_, int iy_, int
 	if(tree->GetBranch("iRing") == NULL) tree->Branch("iRing", &iRing, "iRing/S");
 	else tree->SetBranchAddress("iRing", &iRing);
 
-	if(tree->GetBranch("chi2") == NULL) tree->Branch("chi2", &chiSquare, "chi2/F");
-	else tree->SetBranchAddress("chi2", &chiSquare);
+	//if(tree->GetBranch("chi2") == NULL) tree->Branch("chi2", &chiSquare, "chi2/F");
+	//else tree->SetBranchAddress("chi2", &chiSquare);
 
 	for(auto te : timingEvents) {
 		rawid = te.detid().rawId();
 		time = te.time();
 		energy = te.energy();
-		timeError = te.timeError();
-		chiSquare = te.chi2();
+		//timeError = te.timeError();
+		//chiSquare = te.chi2();
 		tree->Fill();
 	}
 }

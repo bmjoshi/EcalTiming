@@ -1,0 +1,5 @@
+<lcgdict>
+  <class name="EcalTimingEvent"/>
+  <class name="std::vector<EcalTimingEvent>"/>
+  <class name="edm::Wrapper<std::vector<EcalTimingEvent> >"/>
+</lcgdict>
