@@ -74,9 +74,10 @@
 #include "DataFormats/EcalRecHit/interface/EcalRecHitCollections.h"
 //RingTools
 #include "EcalTiming/EcalTiming/interface/EcalRingCalibrationTools.h"
-#include "Geometry/CaloGeometry/interface/CaloGeometry.h"
-#include "Geometry/CaloGeometry/interface/CaloSubdetectorGeometry.h"
 #include "Geometry/Records/interface/CaloGeometryRecord.h"
+#include "Geometry/CaloGeometry/interface/CaloSubdetectorGeometry.h"
+#include "Geometry/CaloGeometry/interface/CaloCellGeometry.h"
+#include "Geometry/CaloGeometry/interface/CaloGeometry.h"
 #include "Geometry/EcalMapping/interface/EcalElectronicsMapping.h"
 #include "Geometry/EcalMapping/interface/EcalMappingRcd.h"
 
@@ -309,10 +310,12 @@ private:
 	TH2D* OccupancyEEM_;
 	TH2D* OccupancyEEP_;
 
+        edm::ESGetToken<CaloGeometry, CaloGeometryRecord> _geoToken;
 	EcalRingCalibrationTools _ringTools;
 	const CaloSubdetectorGeometry * endcapGeometry_;
 	const CaloSubdetectorGeometry * barrelGeometry_;
 
+        const edm::ESGetToken<EcalElectronicsMapping, EcalMappingRcd> mappingToken_;
         const EcalElectronicsMapping * elecMap_;
 
 	unsigned int _iter;

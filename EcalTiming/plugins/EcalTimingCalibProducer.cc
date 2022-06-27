@@ -63,7 +63,9 @@ EcalTimingCalibProducer::EcalTimingCalibProducer(const edm::ParameterSet& iConfi
    _produceNewCalib(iConfig.getParameter<bool>("produceNewCalib")),
    _outputDumpFileName(iConfig.getParameter<std::string>("outputDumpFile")),
    _maxSkewnessForDump(iConfig.getParameter<double>("maxSkewnessForDump")),
-   _ringTools(EcalRingCalibrationTools())
+   _geoToken(esConsumes()),
+   _ringTools(EcalRingCalibrationTools()),
+    mappingToken_(esConsumes())
 {
 }
 
@@ -203,15 +205,13 @@ EcalTimingEvent EcalTimingCalibProducer::correctGlobalOffset(const EcalTimingEve
 bool EcalTimingCalibProducer::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
 {
    //Get Geometry for Rings
-   edm::ESHandle<CaloGeometry> pG;
-   iSetup.get<CaloGeometryRecord>().get(pG);
-   EcalRingCalibrationTools::setCaloGeometry(&(*pG));
-   endcapGeometry_ =  pG->getSubdetectorGeometry(DetId::Ecal, EcalEndcap);
-   barrelGeometry_ =  pG->getSubdetectorGeometry(DetId::Ecal, EcalBarrel);
+   auto const* geometry = &iSetup.getData(_geoToken);
+   _ringTools.setCaloGeometry(geometry);
+   endcapGeometry_ = geometry->getSubdetectorGeometry(DetId::Ecal, EcalBarrel);
+   barrelGeometry_ = geometry->getSubdetectorGeometry(DetId::Ecal, EcalEndcap);
 
-   edm::ESHandle<EcalElectronicsMapping> hElecMap;
-   iSetup.get<EcalMappingRcd>().get(hElecMap);
-   elecMap_ = hElecMap.product();
+   //Get electronics mapping
+   elecMap_ = &iSetup.getData(mappingToken_);
 
    // here the getByToken of the uncalibrechits
    edm::Handle<EcalUncalibratedRecHitCollection> ebUncalibRechits;

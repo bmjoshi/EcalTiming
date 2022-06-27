@@ -1,6 +1,7 @@
 import FWCore.ParameterSet.Config as cms
 import os, sys, imp, re
 import FWCore.ParameterSet.VarParsing as VarParsing
+from Configuration.StandardSequences.Eras import eras
 
 #sys.path(".")
 
@@ -62,7 +63,7 @@ options.register('streamName',
                  VarParsing.VarParsing.varType.string,
                  "type of stream: AlCaPhiSym or AlCaP0")
 options.register('globaltag',
-                 '106X_dataRun2_v28',
+                 'auto:run3_data_prompt',
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.string,
                  "Global tag to use, no default")
@@ -106,7 +107,7 @@ if "RECO" not in processname:
 if "TIME" not in processname:
     doAnalysis = False
 
-process = cms.Process(processname)
+process = cms.Process(processname, eras.Run3)
 
 # if the one file is a folder, grab all the files in it that are RECO
 if len(options.files) == 1 and options.files[0][-1] == '/' and not doReco:
@@ -163,13 +164,8 @@ process.spashesHltFilter = HLTrigger.HLTfilters.hltHighLevel_cfi.hltHighLevel.cl
 )
 
 # GLOBAL-TAG
-from CondCore.DBCommon.CondDBSetup_cfi import *
-process.GlobalTag = cms.ESSource("PoolDBESSource",
-                                 CondDBSetup,
-                                 connect = cms.string('frontier://FrontierProd/CMS_CONDITIONS'),
-                                 globaltag = cms.string(options.globaltag)
-)
-
+from Configuration.AlCa.GlobalTag import GlobalTag
+process.GlobalTag = GlobalTag(process.GlobalTag, options.globaltag, '')
 
 ##  This section is for grabbing the constants from a FrontierPrep for validation
 #from CondCore.DBCommon.CondDBSetup_cfi import *
@@ -188,7 +184,7 @@ process.GlobalTag = cms.ESSource("PoolDBESSource",
 #        )
 #
 ## Process Digi To Raw Step
-process.digiStep = cms.Sequence(process.ecalDigis  + process.ecalPreshowerDigis)
+process.digiStep = cms.Sequence(process.ecalDigis)
 
 ## Process Reco
 
@@ -252,7 +248,7 @@ if doAnalysis:
 process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(options.maxEvents))
 
 #DUMMY RECHIT
-process.dummyHits = cms.EDProducer("DummyRechitDigis",
+process.dummyHits = cms.EDProducer("DummyRechitDigisPi0",
                                     doDigi = cms.untracked.bool(True),
                                     # rechits
                                     barrelHitProducer      = cms.InputTag('hltAlCaPi0EBUncalibrator','pi0EcalRecHitsEB' ,"HLT"),
