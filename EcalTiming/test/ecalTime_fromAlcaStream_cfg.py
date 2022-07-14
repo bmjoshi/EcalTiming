@@ -10,6 +10,11 @@ import FWCore.ParameterSet.VarParsing as VarParsing
 ### SETUP OPTIONS
 
 options = VarParsing.VarParsing('standard')
+options.register('debug',
+                 False,
+                 VarParsing.VarParsing.multiplicity.singleton,
+                 VarParsing.VarParsing.varType.bool,
+                 "DEBUG flag")
 options.register('jsonFile',
                  "",
                  VarParsing.VarParsing.multiplicity.singleton,
@@ -106,7 +111,8 @@ if "RECO" not in processname:
 if "TIME" not in processname:
     doAnalysis = False
 
-process = cms.Process(processname)
+from Configuration.Eras.Era_Run3_cff import Run3
+process = cms.Process(processname, Run3)
 
 # if the one file is a folder, grab all the files in it that are RECO
 if len(options.files) == 1 and options.files[0][-1] == '/' and not doReco:
@@ -125,6 +131,11 @@ process.load('SimGeneral.MixingModule.mixNoPU_cfi')
 process.load('Configuration.StandardSequences.GeometryRecoDB_cff')
 process.load('Configuration.StandardSequences.MagneticField_38T_cff')
 
+#import Electronics mapping
+process.load("Geometry.EcalCommonData.EcalOnly_cfi")
+process.load("Geometry.EcalMapping.EcalMapping_cfi")
+process.load("Geometry.EcalMapping.EcalMappingRecord_cfi")
+
 if(options.isSplash==1):
     ## Get Cosmic Reconstruction
     process.load('Configuration/StandardSequences/ReconstructionCosmics_cff')
@@ -133,11 +144,11 @@ if(options.isSplash==1):
     process.caloCosmics.remove(process.hfreco)
     process.caloCosmics.remove(process.horeco)
     process.caloCosmics.remove(process.zdcreco)
-    process.caloCosmics.remove(process.ecalClusters)
-    process.caloCosmicOrSplashRECOSequence = cms.Sequence(process.caloCosmics )#+ process.egammaCosmics)
+    #process.caloCosmics.remove(process.ecalClusters)
+    process.caloCosmicOrSplashRECOSequence = cms.Sequence(process.caloCosmics)#+ process.egammaCosmics)
 else:
     process.load('Configuration/StandardSequences/Reconstruction_cff')
-    process.recoSequence = cms.Sequence(process.calolocalreco )#+ process.egammaCosmics)
+    process.recoSequence = cms.Sequence(process.calolocalreco)#+ process.egammaCosmics)
 
 process.load('Configuration.StandardSequences.EndOfProcess_cff')
 process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_cff')
@@ -159,50 +170,25 @@ process.load('Configuration/StandardSequences/RawToDigi_Data_cff')
 import HLTrigger.HLTfilters.hltHighLevel_cfi
 process.spashesHltFilter = HLTrigger.HLTfilters.hltHighLevel_cfi.hltHighLevel.clone(
     throw = cms.bool(False),
-    HLTPaths = ['HLT_EG20*', 'HLT_SplashEcalSumET', 'HLT_Calibration','HLT_EcalCalibration','HLT_HcalCalibration','HLT_Random','HLT_Physics','HLT_HcalNZS','HLT_SplashEcalSumET','HLTriggerFinalPath' ]
+    #HLTPaths = ['HLT_EG20*', 'HLT_SplashEcalSumET', 'HLT_Calibration','HLT_EcalCalibration','HLT_HcalCalibration','HLT_Random','HLT_Physics','HLT_HcalNZS','HLT_SplashEcalSumET','HLTriggerFinalPath' ]
+    HLTPaths = ['*']
 )
 
 # GLOBAL-TAG
-from CondCore.DBCommon.CondDBSetup_cfi import *
+from CondCore.CondDB.CondDB_cfi import *
+CondDBSetup = CondDB.clone()
+CondDBSetup.__delattr__('connect')
 process.GlobalTag = cms.ESSource("PoolDBESSource",
                                  CondDBSetup,
+                                 globaltag = cms.string(options.globaltag),
                                  connect = cms.string('frontier://FrontierProd/CMS_CONDITIONS'),
-                                 globaltag = cms.string(options.globaltag)
 )
 
 
-##  This section is for grabbing the constants from a FrontierPrep for validation
-#from CondCore.DBCommon.CondDBSetup_cfi import *
-#
-## rereco of for EOY
-#process.GlobalTag = cms.ESSource("PoolDBESSource",
-#        CondDBSetup,
-#        connect = cms.string('frontier://FrontierProd/CMS_CONDITIONS'),
-#        globaltag = cms.string(options.globaltag),
-#        toGet = cms.VPSet(
-#            cms.PSet(record = cms.string("EcalTimeCalibConstantsRcd"),
-#                tag = cms.string("EcalTimeCalibConstants_v08_offline"),
-#                connect = cms.untracked.string('frontier://FrontierPrep/CMS_CONDITIONS')
-#                )
-#            ),
-#        )
-#
 ## Process Digi To Raw Step
 process.digiStep = cms.Sequence(process.ecalDigis  + process.ecalPreshowerDigis)
 
 ## Process Reco
-
-
-
-### Print Out Some Messages
-#process.MessageLogger = cms.Service("MessageLogger",
-#    cout = cms.untracked.PSet(
-#        threshold = cms.untracked.string('WARNING')
-#    ),
-#    categories = cms.untracked.vstring('ecalTimeTree'),
-#    destinations = cms.untracked.vstring('cout')
-#)
-
 # enable the TrigReport and TimeReport
 process.options = cms.untracked.PSet(
     wantSummary = cms.untracked.bool(True),
@@ -228,17 +214,18 @@ if(len(options.jsonFile) > 0):
 
 recofile = str(options.output)
 recofile = recofile[:recofile.find(".root")] + "_RECO.root"
+
 # Output definition
 process.RECOoutput = cms.OutputModule("PoolOutputModule",
-splitLevel = cms.untracked.int32(0),
-eventAutoFlushCompressedSize = cms.untracked.int32(5242880),
-outputCommands = cms.untracked.vstring('drop *',"keep *_EcalTimingEvents_*_*"),
-fileName = cms.untracked.string(recofile),
-dataset = cms.untracked.PSet(
-   filterName = cms.untracked.string(''),
-   dataTier = cms.untracked.string('RECO')
-)
-)
+                                      splitLevel = cms.untracked.int32(0),
+                                      eventAutoFlushCompressedSize = cms.untracked.int32(5242880),
+                                      outputCommands = cms.untracked.vstring('drop *',"keep *_EcalTimingEvents_*_*"),
+                                      fileName = cms.untracked.string(recofile),
+                                      dataset = cms.untracked.PSet(
+                                          filterName = cms.untracked.string(''),
+                                          dataTier = cms.untracked.string('RECO')
+                                          )
+                                       )
 
 
 if doAnalysis:
@@ -280,13 +267,19 @@ process.triggerSelectionLoneBunch = cms.EDFilter( "TriggerResultsFilter",
 process.filter=cms.Sequence()
 if(options.isSplash==1):
     process.filter+=process.spashesHltFilter
-    process.reco_step = cms.Sequence(process.caloCosmicOrSplashRECOSequence)
+    process.ecalMultiFitUncalibRecHit.cpu.EBdigiCollection = cms.InputTag("ecalDigis", "ebDigis", "SPLASHFILTER1")#,'piZeroAnalysis')
+    process.ecalMultiFitUncalibRecHit.cpu.EEdigiCollection = cms.InputTag("ecalDigis", "eeDigis", "SPLASHFILTER1")#,'piZeroAnalysis')
+
+    #UNCALIB to CALIB
+    process.filter += cms.Sequence( process.caloCosmicOrSplashRECOSequence
+                                      * process.ecalMultiFitUncalibRecHit)
 else:
     if(options.streamName=="AlCaP0"):
       if(options.loneBunch==1):
         process.filter+=process.triggerSelectionLoneBunch
       import RecoLocalCalo.EcalRecProducers.ecalMultiFitUncalibRecHit_cfi
       process.ecalMultiFitUncalibRecHit =  RecoLocalCalo.EcalRecProducers.ecalMultiFitUncalibRecHit_cfi.ecalMultiFitUncalibRecHit.clone()
+
       process.ecalMultiFitUncalibRecHit.EBdigiCollection = cms.InputTag('dummyHits','dummyBarrelDigisPi0')#,'piZeroAnalysis')
       process.ecalMultiFitUncalibRecHit.EEdigiCollection = cms.InputTag('dummyHits','dummyEndcapDigisPi0')#,'piZeroAnalysis')
 
@@ -316,18 +309,11 @@ if(options.isSplash==0):
     process.digiStep = cms.Sequence()
 
 
-
 evtPlots = True if options.isSplash else False
-
-
-#import Electronics mapping
-process.load("Geometry.EcalCommonData.EcalOnly_cfi")
-process.load("Geometry.EcalMapping.EcalMapping_cfi")
-process.load("Geometry.EcalMapping.EcalMappingRecord_cfi")
-
 
 if doAnalysis:
     process.load('EcalTiming.EcalTiming.ecalTimingCalibProducer_cfi')
+    process.timing.DEBUG = cms.bool(options.debug)
     process.timing.timingCollection = cms.InputTag("EcalTimingEvents")
     process.timing.isSplash= cms.bool(True if options.isSplash else False)
     process.timing.saveTimingEvents= cms.bool(True)
@@ -337,27 +323,26 @@ if doAnalysis:
     process.timing.energyThresholdOffsetEB = cms.double(options.minEnergyEB)
     process.timing.energyThresholdOffsetEE = cms.double(options.minEnergyEE)
     process.timing.storeEvents = cms.bool(True)
-    process.analysis = cms.Sequence( process.timing )
+    process.analysis = cms.Sequence( process.timing)
 
 process.load('EcalTiming.EcalTiming.EcalTimingSequence_cff')
+process.seq = cms.Sequence()
 if doReco:
-    process.reco = cms.Sequence( (process.filter 
+    if options.isSplash:
+        process.seq += cms.Sequence( process.filter * process.EcalTimingEventSeq )
+    else:
+        process.reco = cms.Sequence( (process.filter 
                       + process.digiStep 
                       + process.reco_step)
                       * process.EcalTimingEventSeq
                       )
+        process.seq += process.reco
 
-
-process.seq = cms.Sequence()
-if doReco:
-    process.seq += process.reco
 if doAnalysis:
     process.seq += process.analysis
-else:
-    process.endp = cms.EndPath(process.RECOoutput)
 
 process.p = cms.Path(process.seq)
-from datetime import datetime
-processDumpFilename = "processDump" + datetime.now().strftime("%M%S%f") + ".py"
-processDumpFile = open(processDumpFilename, 'w')
-#print>> processDumpFile, process.dumpPython()
+#from datetime import datetime
+#processDumpFilename = "processDump" + datetime.now().strftime("%M%S%f") + ".py"
+#processDumpFile = open(processDumpFilename, 'w')
+#print( >> processDumpFile), process.dumpPython()

@@ -31,6 +31,7 @@ using namespace cms;
 // constructors and destructor
 //
 EcalTimingCalibProducer::EcalTimingCalibProducer(const edm::ParameterSet& iConfig) :
+   DEBUG(iConfig.getParameter<bool>("DEBUG")),
    _isSplash(iConfig.getParameter<bool>("isSplash")),
    _saveTimingEvents(iConfig.getParameter<bool>("saveTimingEvents")),
    _makeEventPlots(iConfig.getParameter<bool>("makeEventPlots")),
@@ -39,6 +40,8 @@ EcalTimingCalibProducer::EcalTimingCalibProducer(const edm::ParameterSet& iConfi
    _ebUncalibRechits(consumes<EcalUncalibratedRecHitCollection>(iConfig.getParameter<edm::InputTag>("ebUncalibRechits"))),
    _eeUncalibRechits(consumes<EcalUncalibratedRecHitCollection>(iConfig.getParameter<edm::InputTag>("eeUncalibRechits"))),
    _timingEvents(consumes<EcalTimingCollection>(iConfig.getParameter<edm::InputTag>("timingCollection"))),
+   _tokenGeom(esConsumes<CaloGeometry, CaloGeometryRecord>()),
+   _tokenElecMap(esConsumes<EcalElectronicsMapping, EcalMappingRcd>()),
    _recHitMin(iConfig.getParameter<unsigned int>("recHitMinimumN")),
 
    ///\todo the min energy should be in ADC not in energy
@@ -107,36 +110,53 @@ bool EcalTimingCalibProducer::addRecHit(const EcalTimingEvent& timeEvent, EventT
    if(timeEvent.detid().subdetId() == EcalBarrel)
    {
 
-      if( timeEvent.energy() < (energyThreshold) ) return false;
+      if( timeEvent.energy() < (energyThreshold) ){ 
+         if (DEBUG) cout<<"TimeEvent energy: " << timeEvent.energy() << ", Threshold: " << energyThreshold <<endl;
+         return false;
+      }
       if(_applyAmpThresEB == true)
       {
          float amplitude = (*ebUncalibRechitsCollection->find(timeEvent.detid())).amplitude();
          float maxOOTAmp = 0.;
          for(int bx=0;bx<10;bx++)
-            if((*ebUncalibRechitsCollection->find(timeEvent.detid())).outOfTimeAmplitude(bx) > maxOOTAmp) maxOOTAmp = (*ebUncalibRechitsCollection->find(timeEvent.detid())).outOfTimeAmplitude(bx);
+            if((*ebUncalibRechitsCollection->find(timeEvent.detid())).outOfTimeAmplitude(bx) > maxOOTAmp)
+               maxOOTAmp = (*ebUncalibRechitsCollection->find(timeEvent.detid())).outOfTimeAmplitude(bx);
+         
+         if (DEBUG) {
+            cout << "Amplitude: "<< amplitude <<endl;
+            cout<< "maxOOTAmp: "<< maxOOTAmp <<endl;
+         }
          //EBDetId hitDetId = timeEvent.detid();
          if(iRing<0 && amplitude<_ampCut_barrelM[abs(iRing)]) return false; 
          if(iRing>0 && amplitude<_ampCut_barrelP[iRing]) return false; 
          if(amplitude/maxOOTAmp < _ampFrac && maxOOTAmp>0.) return false;
-         //std::cout << "EB: " << hitDetId.ieta() << " " << iRing << " " << _ampCut_barrelM[abs(iRing)] << " " << amplitude << std::endl;
+         if (DEBUG) std::cout << "EB: " << iRing << " " << _ampCut_barrelM[abs(iRing)] << " " << amplitude << std::endl;
       }
 
    }else{
 
-      if( timeEvent.energy() < (energyThreshold) ) return false;
+      if( timeEvent.energy() < (energyThreshold) ){
+         if (DEBUG) cout<<"TimeEvent energy: " << timeEvent.energy() << ", Threshold: " << energyThreshold <<endl;
+         return false;
+      }
+
       if(_applyAmpThresEE == true)
       {
          float amplitude = (*eeUncalibRechitsCollection->find(timeEvent.detid())).amplitude();
          float maxOOTAmp = 0.;
          for(int bx=0;bx<10;bx++)
-            if((*eeUncalibRechitsCollection->find(timeEvent.detid())).outOfTimeAmplitude(bx) > maxOOTAmp) maxOOTAmp = (*eeUncalibRechitsCollection->find(timeEvent.detid())).outOfTimeAmplitude(bx);
+            if((*eeUncalibRechitsCollection->find(timeEvent.detid())).outOfTimeAmplitude(bx) > maxOOTAmp)
+               maxOOTAmp = (*eeUncalibRechitsCollection->find(timeEvent.detid())).outOfTimeAmplitude(bx);
+         if (DEBUG) {
+            cout << "Amplitude: "<< amplitude <<endl;
+            cout<< "maxOOTAmp: "<< maxOOTAmp <<endl;
+         }
          EEDetId hitDetId = timeEvent.detid();
          if(hitDetId.zside()<0 && amplitude<_ampCut_endcapM[iRing]) return false; 
          if(hitDetId.zside()>0 && amplitude<_ampCut_endcapP[iRing]) return false; 
          if(amplitude/maxOOTAmp < _ampFrac && maxOOTAmp>0.) return false;
-         //std::cout << "EE: " << iRing << " " << _ampCut_endcapM[iRing] << " " << amplitude << std::endl;
+         if (DEBUG) std::cout << "EE: " << iRing << " " << _ampCut_endcapM[iRing] << " " << amplitude << std::endl;
       }
-
    }
 
    // add the EcalTimingEvent to the EcalCreateTimeCalibrations
@@ -202,16 +222,22 @@ EcalTimingEvent EcalTimingCalibProducer::correctGlobalOffset(const EcalTimingEve
 // ------------ called for each event in the loop.  The present event loop can be stopped by return kStop ------------
 bool EcalTimingCalibProducer::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
 {
+
+   if (DEBUG) cout<<"filter"<<endl;
    //Get Geometry for Rings
    edm::ESHandle<CaloGeometry> pG;
-   iSetup.get<CaloGeometryRecord>().get(pG);
+   //iSetup.get<CaloGeometryRecord>().get(pG);
+   pG = iSetup.getHandle(_tokenGeom);
    EcalRingCalibrationTools::setCaloGeometry(&(*pG));
    endcapGeometry_ =  pG->getSubdetectorGeometry(DetId::Ecal, EcalEndcap);
    barrelGeometry_ =  pG->getSubdetectorGeometry(DetId::Ecal, EcalBarrel);
 
    edm::ESHandle<EcalElectronicsMapping> hElecMap;
-   iSetup.get<EcalMappingRcd>().get(hElecMap);
+   //iSetup.get<EcalMappingRcd>().get(hElecMap);
+   hElecMap = iSetup.getHandle(_tokenElecMap);
    elecMap_ = hElecMap.product();
+
+   if (DEBUG) cout << "Map record found "<<endl;
 
    // here the getByToken of the uncalibrechits
    edm::Handle<EcalUncalibratedRecHitCollection> ebUncalibRechits;
@@ -224,12 +250,12 @@ bool EcalTimingCalibProducer::filter(edm::Event& iEvent, const edm::EventSetup& 
    const EcalUncalibratedRecHitCollection *eeUncalibRechitsCollection = NULL;
    eeUncalibRechitsCollection = eeUncalibRechits.product();
 
+   if (DEBUG) cout<<"UncalibHits done"<<endl;
+
    // here the getByToken of the rechits
    edm::Handle<EcalTimingCollection> timingCollection;
    iEvent.getByToken(_timingEvents, timingCollection);
-#ifdef DEBUG
-   std::cout << "Nhits\t" << timingCollection->size() << std::endl;
-#endif
+   if(DEBUG) std::cout << "Nhits\t" << timingCollection->size() << std::endl;
 
    int run = iEvent.id().run();
    int lumi = iEvent.luminosityBlock();
@@ -250,9 +276,7 @@ bool EcalTimingCalibProducer::filter(edm::Event& iEvent, const edm::EventSetup& 
    // timeEvent is of type: edm::Handle<EcalTimingEvent>::const_iterator
    for(auto  timeEvent : *timingCollection) {
       // add the recHit to the list of recHits used for calibration (with the relative information)
-#ifdef DEBUG
-      std::cout << timeEvent << std::endl;
-#endif
+      if (DEBUG) std::cout << timeEvent << std::endl;
       if(addRecHit(timeEvent, _eventTimeMap,ebUncalibRechitsCollection,eeUncalibRechitsCollection)) {
          if( timeEvent.detid().subdetId() == EcalBarrel) {
             timeEB.add(EcalTimingEvent(timeEvent), false);
@@ -267,19 +291,18 @@ bool EcalTimingCalibProducer::filter(edm::Event& iEvent, const edm::EventSetup& 
       }
    }
 
-#ifdef DEBUG
-   std::cout << "[DEBUG]" << "nRecHits passing selection"
-      << "\t" << _eventTimeMap.size()
-      << "\t" << timeEB.num()
-      << "\t" << timeEEM.num()
-      << "\t" << timeEEP.num()
-      << std::endl;
-#endif
+   if (DEBUG){
+      std::cout << "[DEBUG]" << "nRecHits passing selection"
+         << "\t" << _eventTimeMap.size()
+         << "\t" << timeEB.num()
+         << "\t" << timeEEM.num()
+         << "\t" << timeEEP.num()
+         << std::endl;
+   }
+
    // If we got less than the minimum recHits, continue -> this is to select events with enough activity
    if(_eventTimeMap.size() < _recHitMin) return false;
-#ifdef DEBUG
-   std::cout << "[DUMP]\t" << timeEB << "\t"  << timeEEM << "\t" << timeEEP << std::endl;
-#endif
+   if (DEBUG) std::cout << "[DUMP]\t" << timeEB << "\t"  << timeEEM << "\t" << timeEEP << std::endl;
    // Make a new directory for Histograms for each event if you want plots per event
    char eventDirName[100];
    if(_makeEventPlots) {
@@ -333,12 +356,12 @@ void EcalTimingCalibProducer::endJob()
 
    // set the values in _calibConstants, _calibErrors, _offsetConstant
 
-#ifdef DEBUG
-   for (auto it : _HWCalibrationMap)
-   {
-      if	(abs(it.second.mean()) > HW_UNIT * 1.5) std::cout <<  "HW: " << it.first << ' ' << it.second.mean() << std::endl;
+   if (DEBUG){
+      for (auto it : _HWCalibrationMap)
+      {
+         if	(abs(it.second.mean()) > HW_UNIT * 1.5) std::cout <<  "HW: " << it.first << ' ' << it.second.mean() << std::endl;
+      }
    }
-#endif
    // remove the entries OOT (time > n_sigma)
    float n_sigma = 2.; /// \todo remove hard coded number
    for(auto calibRecHit_itr = _timeCalibMap.begin(); calibRecHit_itr != _timeCalibMap.end(); ++calibRecHit_itr) {
@@ -441,16 +464,16 @@ void EcalTimingCalibProducer::dumpCalibration(std::string filename)
 
    // loop over the constants
    // to make more efficient
-#ifdef DEBUG
-   DetId findId(RAWIDCRY);
-   if(findId.subdetId() == EcalBarrel) {
-      EBDetId id(RAWIDCRY);
-      fout << "EB: " << id.ieta() << "\t" << id.iphi() << "\t" << id.zside() << "\t" << _timeCalibConstants.barrelItems()[id.denseIndex()] << "\t" << *_timeCalibConstants.find(RAWIDCRY) << "\t" << id.rawId() << std::endl;
-   } else {
-      EEDetId id(findId);
-      fout << "EE: " << id.ix() << "\t" << id.iy() << "\t" << id.zside() << "\t" << _timeCalibConstants.endcapItems()[id.denseIndex()] << "\t" << *_timeCalibConstants.find(RAWIDCRY) << std::endl;
+   if (DEBUG){
+      DetId findId(RAWIDCRY);
+      if(findId.subdetId() == EcalBarrel) {
+         EBDetId id(RAWIDCRY);
+         fout << "EB: " << id.ieta() << "\t" << id.iphi() << "\t" << id.zside() << "\t" << _timeCalibConstants.barrelItems()[id.denseIndex()] << "\t" << *_timeCalibConstants.find(RAWIDCRY) << "\t" << id.rawId() << std::endl;
+      } else {
+         EEDetId id(findId);
+         fout << "EE: " << id.ix() << "\t" << id.iy() << "\t" << id.zside() << "\t" << _timeCalibConstants.endcapItems()[id.denseIndex()] << "\t" << *_timeCalibConstants.find(RAWIDCRY) << std::endl;
+      }
    }
-#endif
 
    for(unsigned int i = 0; i < _timeCalibConstants.barrelItems().size(); ++i) {
       EBDetId id(EBDetId::detIdFromDenseIndex(i)); // this is a stupid thing that I'm obliged to do due to the stupid structure of the ECAL container

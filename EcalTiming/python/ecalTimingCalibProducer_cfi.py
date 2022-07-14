@@ -1,6 +1,7 @@
 import FWCore.ParameterSet.Config as cms
 
 timing = cms.EDFilter("EcalTimingCalibProducer",
+                    DEBUG = cms.bool(False),
                     isSplash = cms.bool(False),
                     makeEventPlots = cms.bool(False),
                     applyAmpThresEB = cms.bool(True),

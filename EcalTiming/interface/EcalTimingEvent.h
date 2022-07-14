@@ -42,7 +42,6 @@ public:
         void setTime(float t);
         void setEnergy(float e);
 
-
 private:
         DetId detid_;
         int16_t time_;

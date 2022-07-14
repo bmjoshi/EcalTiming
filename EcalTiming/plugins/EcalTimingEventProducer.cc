@@ -5,10 +5,10 @@
 // 
 /**\class EcalTimingEventProducer EcalTimingEventProducer.cc EcalTiming/EcalTimingEventProducer/plugins/EcalTimingEventProducer.cc
 
- Description: [one line class summary]
+Description: [one line class summary]
 
- Implementation:
-     [Notes on implementation]
+Implementation:
+[Notes on implementation]
 */
 //
 // Original Author:  Peter Hansen
@@ -48,15 +48,15 @@ class EcalTimingEventProducer : public edm::EDProducer {
       virtual void beginJob() override;
       virtual void produce(edm::Event&, const edm::EventSetup&) override;
       virtual void endJob() override;
-      
+
       //virtual void beginRun(edm::Run const&, edm::EventSetup const&) override;
       //virtual void endRun(edm::Run const&, edm::EventSetup const&) override;
       //virtual void beginLuminosityBlock(edm::LuminosityBlock const&, edm::EventSetup const&) override;
       //virtual void endLuminosityBlock(edm::LuminosityBlock const&, edm::EventSetup const&) override;
 
       // ----------member data ---------------------------
-		edm::EDGetTokenT<EBRecHitCollection> _ecalRecHitsEBtoken;
-		edm::EDGetTokenT<EERecHitCollection> _ecalRecHitsEEtoken;
+      edm::EDGetTokenT<EBRecHitCollection> _ecalRecHitsEBtoken;
+      edm::EDGetTokenT<EERecHitCollection> _ecalRecHitsEEtoken;
 };
 
 //
@@ -72,8 +72,8 @@ class EcalTimingEventProducer : public edm::EDProducer {
 // constructors and destructor
 //
 EcalTimingEventProducer::EcalTimingEventProducer(const edm::ParameterSet& iConfig):
-	_ecalRecHitsEBtoken(consumes<EBRecHitCollection>(iConfig.getParameter<edm::InputTag>("recHitEBCollection"))),
-	_ecalRecHitsEEtoken(consumes<EERecHitCollection>(iConfig.getParameter<edm::InputTag>("recHitEECollection")))
+   _ecalRecHitsEBtoken(consumes<EBRecHitCollection>(iConfig.getParameter<edm::InputTag>("recHitEBCollection"))),
+   _ecalRecHitsEEtoken(consumes<EERecHitCollection>(iConfig.getParameter<edm::InputTag>("recHitEECollection")))
 {
    //register your products
    produces<EcalTimingCollection>();
@@ -82,7 +82,7 @@ EcalTimingEventProducer::EcalTimingEventProducer(const edm::ParameterSet& iConfi
 
 EcalTimingEventProducer::~EcalTimingEventProducer()
 {
- 
+
    // do anything here that needs to be done at desctruction time
    // (e.g. close files, deallocate resources etc.)
 
@@ -94,37 +94,39 @@ EcalTimingEventProducer::~EcalTimingEventProducer()
 //
 
 // ------------ method called to produce the data  ------------
-void
+   void
 EcalTimingEventProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
 {
    using namespace edm;
-	// here the getByToken of the rechits
-	edm::Handle<EcalRecHitCollection> RecHitEBHandle;
-	iEvent.getByToken(_ecalRecHitsEBtoken, RecHitEBHandle);
-	edm::Handle<EcalRecHitCollection> RecHitEEHandle;
-	iEvent.getByToken(_ecalRecHitsEEtoken, RecHitEEHandle);
+   // here the getByToken of the rechits
+   edm::Handle<EcalRecHitCollection> RecHitEBHandle;
+   iEvent.getByToken(_ecalRecHitsEBtoken, RecHitEBHandle);
+   edm::Handle<EcalRecHitCollection> RecHitEEHandle;
+   iEvent.getByToken(_ecalRecHitsEEtoken, RecHitEEHandle);
 
-        std::unique_ptr<EcalTimingCollection> timing_out(new EcalTimingCollection());
+   std::unique_ptr<EcalTimingCollection> timing_out(new EcalTimingCollection());
 
-	for(auto  recHit_itr : *RecHitEBHandle) {
-		timing_out->push_back(EcalTimingEvent(recHit_itr));
-	}
-	for(auto  recHit_itr : *RecHitEEHandle) {
-		timing_out->push_back(EcalTimingEvent(recHit_itr));
-	}
+   for(auto  recHit_itr : *RecHitEBHandle) {
+      EcalTimingEvent tev = EcalTimingEvent(recHit_itr);
+      cout<<tev.time<<endl;
+      timing_out->push_back(EcalTimingEvent(recHit_itr));
+   }
+   for(auto  recHit_itr : *RecHitEEHandle) {
+      timing_out->push_back(EcalTimingEvent(recHit_itr));
+   }
 
    iEvent.put(std::move(timing_out));
 
-/* this is an EventSetup example
+   /* this is an EventSetup example
    //Read SetupData from the SetupRecord in the EventSetup
    ESHandle<SetupData> pSetup;
    iSetup.get<SetupRecord>().get(pSetup);
-*/
- 
+   */
+
 }
 
 // ------------ method called once each job just before starting event loop  ------------
-void 
+   void 
 EcalTimingEventProducer::beginJob()
 {
 }
@@ -136,45 +138,45 @@ EcalTimingEventProducer::endJob() {
 
 // ------------ method called when starting to processes a run  ------------
 /*
-void
-EcalTimingEventProducer::beginRun(edm::Run const&, edm::EventSetup const&)
-{
-}
-*/
- 
+   void
+   EcalTimingEventProducer::beginRun(edm::Run const&, edm::EventSetup const&)
+   {
+   }
+   */
+
 // ------------ method called when ending the processing of a run  ------------
 /*
-void
-EcalTimingEventProducer::endRun(edm::Run const&, edm::EventSetup const&)
-{
-}
-*/
- 
+   void
+   EcalTimingEventProducer::endRun(edm::Run const&, edm::EventSetup const&)
+   {
+   }
+   */
+
 // ------------ method called when starting to processes a luminosity block  ------------
 /*
-void
-EcalTimingEventProducer::beginLuminosityBlock(edm::LuminosityBlock const&, edm::EventSetup const&)
-{
-}
-*/
- 
+   void
+   EcalTimingEventProducer::beginLuminosityBlock(edm::LuminosityBlock const&, edm::EventSetup const&)
+   {
+   }
+   */
+
 // ------------ method called when ending the processing of a luminosity block  ------------
 /*
-void
-EcalTimingEventProducer::endLuminosityBlock(edm::LuminosityBlock const&, edm::EventSetup const&)
-{
-}
-*/
- 
+   void
+   EcalTimingEventProducer::endLuminosityBlock(edm::LuminosityBlock const&, edm::EventSetup const&)
+   {
+   }
+   */
+
 // ------------ method fills 'descriptions' with the allowed parameters for the module  ------------
 void
 EcalTimingEventProducer::fillDescriptions(edm::ConfigurationDescriptions& descriptions) {
-  //The following says we do not know what parameters are allowed so do no validation
-  // Please change this to state exactly what you do use, even if it is no parameters
-  edm::ParameterSetDescription desc;
-  desc.add<edm::InputTag>("recHitEECollection");
-  desc.add<edm::InputTag>("recHitEBCollection");
-  descriptions.addDefault(desc);
+   //The following says we do not know what parameters are allowed so do no validation
+   // Please change this to state exactly what you do use, even if it is no parameters
+   edm::ParameterSetDescription desc;
+   desc.add<edm::InputTag>("recHitEECollection");
+   desc.add<edm::InputTag>("recHitEBCollection");
+   descriptions.addDefault(desc);
 }
 
 //define this as a plug-in

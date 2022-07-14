@@ -266,7 +266,7 @@ int main(int argc, char** argv)
    tree->SetBranchAddress("event", &event, &b_event);
    tree->SetBranchAddress("bx", &bx, &b_bx);
 
-   int nEvents = 0;
+   long long int nEvents = 0;
 
    if(maxEvents == -1) nEvents = tree->GetEntries();
    else {
