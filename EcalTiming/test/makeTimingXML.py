@@ -172,7 +172,7 @@ else:
    lines_interCalib_split = calib.split("/")
    interCalib_time = lines_interCalib_split[len(lines_interCalib_split)-1].split("_")
    if(interCalib_time[3].find(".dat") != -1):
-      date = interCalib_time[3].replace(".dat", "")+"/"+interCalib_time[2]+"/"+interCalib_time[1]
+      date = interCalib_time[3].split('-')[0].replace(".dat", "")+"/"+interCalib_time[2]+"/"+interCalib_time[1]
       timeStamp = time.mktime(datetime.datetime.strptime(date, "%d/%m/%Y").timetuple())
       if(payload == ""):
          icount = 0

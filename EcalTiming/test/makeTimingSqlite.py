@@ -5,11 +5,11 @@ import sys, math, os, collections, getopt, subprocess, time, shutil, datetime
 from array import array
 
 def usage():
-    print "Usage: python makeTimingSqlite.py --calib=[calib] --tag=[tag]"
-    print "Usage: python makeTimingSqlite.py --inList=[inList] --tag=[tag]"
+    print "Usage: python makeTimingSqlite.py --calib=[calib] --tag=[tag] --firstRun=[firstRun]"
+    print "Usage: python makeTimingSqlite.py --inList=[inList] --tag=[tag] --firstRun=[firstRun]"
     
 try:
-     opts, args = getopt.getopt(sys.argv[1:], "c:i:t:h", ["calib=","inList=","tag=","help"])
+    opts, args = getopt.getopt(sys.argv[1:], "c:i:t:r:h", ["calib=","inList=","tag=","firstRun=","help"])
 
 except getopt.GetoptError:
      #* print help information and exit:*
@@ -20,15 +20,18 @@ except getopt.GetoptError:
 calib = ""
 inList = ""
 tag = ""
+firstRun = 0
+
 help = False
 for opt, arg in opts:
-    
      if opt in ("--calib"):
         calib = arg
      if opt in ("--inList"):
         inList = arg  
      if opt in ("--tag"):
-        tag = arg    
+        tag = arg
+     if opt in ("--firstRun"):
+         firstRun = int(arg)
      if opt in ("--help"):
         help = True     
 
@@ -67,22 +70,17 @@ if(inList != ""):
          if os.path.isfile(str(output)):
             print "WARNING: overwriting ",output
             command = os.system("rm "+str(output))
-         command=os.system("cmsRun ../../../CondTools/Ecal/python/testEcalTimeCalib.py xmlFile="+str(x)+" sqliteFile="+str(output)+" firstRun="+str(firstRun)+" tag="+str(tag))
+         command=os.system("cmsRun testEcalTimeCalib.py xmlFile="+str(x)+" sqliteFile="+str(output)+" firstRun="+str(firstRun)+" tag="+str(tag))
          creation_command = "conddb_import -f sqlite_file:"+str(output)+" -i "+str(tag)+" -c sqlite_file:"+str(tag)+"_rereco_calib.db -t "+str(tag)+" -b "+str(firstRun)+"\n"
          f_tag.write(creation_command)
 else:
    calib_split = calib.split("/")
-   runs = calib_split[len(calib_split)-2].split("_")
-   firstRun = runs[0]
    output = calib.replace(".xml", ".db")
    if os.path.isfile(str(output)):
       print "WARNING: overwriting ",output
       command = os.system("rm "+str(output))
-   command=os.system("cmsRun ../../../CondTools/Ecal/python/testEcalTimeCalib.py xmlFile="+str(calib)+" sqliteFile="+str(output)+" firstRun="+str(firstRun)+" tag="+str(tag))
+   command=os.system("cmsRun testEcalTimeCalib.py xmlFile="+str(calib)+" sqliteFile="+str(output)+" firstRun="+str(firstRun)+" tag="+str(tag))
    creation_command = "conddb_import -f sqlite_file:"+str(output)+" -i "+str(tag)+" -c sqlite_file:"+str(tag)+"_rereco_calib.db -t "+str(tag)+" -b "+str(firstRun)
    os.system(creation_command)
 
 f_tag.close()
-   
-
-

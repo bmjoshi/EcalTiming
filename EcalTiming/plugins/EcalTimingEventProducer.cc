@@ -37,6 +37,9 @@ Implementation:
 // class declaration
 //
 
+using namespace std;
+using namespace edm;
+
 class EcalTimingEventProducer : public edm::EDProducer {
    public:
       explicit EcalTimingEventProducer(const edm::ParameterSet&);
@@ -107,8 +110,7 @@ EcalTimingEventProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSet
    std::unique_ptr<EcalTimingCollection> timing_out(new EcalTimingCollection());
 
    for(auto  recHit_itr : *RecHitEBHandle) {
-      EcalTimingEvent tev = EcalTimingEvent(recHit_itr);
-      cout<<tev.time<<endl;
+      //EcalTimingEvent tev = EcalTimingEvent(recHit_itr);
       timing_out->push_back(EcalTimingEvent(recHit_itr));
    }
    for(auto  recHit_itr : *RecHitEEHandle) {
