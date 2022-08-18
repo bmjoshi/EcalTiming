@@ -131,6 +131,7 @@ binning_map = {
         'centers_y': np.linspace(1.5, 100.5, 100)
     }
 }
+
 # print filenames
 print('reading files...')
 for ifile, filename in enumerate(filelist):
@@ -437,9 +438,11 @@ for ieta_, iphi_ in bad_EB_list:
     plt.xlim(minx, maxx)
     plt.savefig('{}/plots/bad_channels/EB_xtal_time_ieta_{}_iphi_{}.png'.format(path_to_output, ieta_, iphi_))
     plt.close()
+'''
 os.system('EcalTimingCalibration EcalTimingCalibration_cfg_{}_{}.py'.format(args.start_run,args.end_run))
 os.system('mv EcalTimingCalibration_cfg_{}_{}.py {}'.format(args.start_run,args.end_run,path_to_output))
 os.system('mv FILELIST_{}_{} {}'.format(args.start_run,args.end_run,path_to_output))
 os.system('cp {out}/ecalTiming-corr.dat {out}/ecalTiming-corr_{date}.dat'.format(out=path_to_output, date=date))
 os.system('python makeTimingXML.py --tag=EcalTimeCalibConstants_v01_express --calib={}/ecalTiming-corr_{}.dat'.format(path_to_output,date))
 os.system('python makeTimingSqlite.py --tag=EcalTimeCalibConstants_Prompt2022_v1 --calib={}/ecalTiming-abs_{}.xml'.format(path_to_output,date))
+'''

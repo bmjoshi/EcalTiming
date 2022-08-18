@@ -67,7 +67,7 @@ options.register('streamName',
                  VarParsing.VarParsing.varType.string,
                  "type of stream: AlCaPhiSym or AlCaP0")
 options.register('globaltag',
-                 '106X_dataRun2_v28',
+                 '124X_dataRun3_Prompt_v4',
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.string,
                  "Global tag to use, no default")
