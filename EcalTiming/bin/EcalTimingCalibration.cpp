@@ -122,7 +122,6 @@ int main(int argc, char** argv)
 
    string outputDir = filesOpt.getParameter<string>( "outputDir" );
    if( outputDir == "" ) outputDir = "output/"; 
-
    string outputCalib = filesOpt.getParameter<string>( "outputCalib" );
    if( outputCalib == "" ) outputCalib = "ecalTiming.dat"; 
    string outputCalibCorr = filesOpt.getParameter<string>( "outputCalibCorr" );
@@ -145,6 +144,8 @@ int main(int argc, char** argv)
 
    int nSigma = calibOpt.getParameter<int>( "nSigma" );
    int maxRange = calibOpt.getParameter<int>( "maxRange" );
+   double ebECut = calibOpt.getParameter<double>( "ebECut" );
+   double eeECut = calibOpt.getParameter<double>( "eeECut" );
 
    TProfile2D* EneMapEB_ = new TProfile2D("EneMapEB", "RecHit Energy[GeV] EB profile map;i#phi; i#eta;E[GeV]", 360, 1., 361., 171, -85, 86);
    TProfile2D* TimeMapEB_ = new TProfile2D("TimeMapEB", "Mean Time [ns] EB profile map; i#phi; i#eta;Time[ns]", 360, 1., 361., 171, -85, 86);
@@ -280,9 +281,18 @@ int main(int argc, char** argv)
       if(entry%1000000==0) cout << "--- Reading entry = " << entry << endl;
       tree->GetEntry(entry);
 
-      if(iz == 0) ix += 85;
-      else if(iz < 0) iz = 1;
-      else if(iz > 0)iz = 2;
+      if(iz == 0) { 
+         ix += 85;
+         if (energy<ebECut) continue;
+      }
+      else if(iz < 0) {
+         iz = 1;
+         if (energy<eeECut) continue;
+      }
+      else if(iz > 0){
+         iz = 2;
+         if (energy<eeECut) continue;
+      }
 
       rawIDMap[ix][iy][iz] = rawid;
       elecIDMap[ix][iy][iz] = elecID;

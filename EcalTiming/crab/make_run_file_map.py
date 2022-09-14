@@ -5,7 +5,7 @@ import argparse
 import json
 
 parser = argparse.ArgumentParser()
-parser.add_argument('-d','--dataset', type=str, default='/AlCaPhiSym/Run2018D-v1/RAW')
+parser.add_argument('-d','--dataset', type=str, default='/AlCaPhiSym/Run2022D-v1/RAW')
 args = parser.parse_args()
 
 _dataset = args.dataset

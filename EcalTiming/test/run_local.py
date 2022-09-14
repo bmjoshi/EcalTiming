@@ -26,8 +26,13 @@ parser.add_argument('-s', '--start-run', type=int, help='Starting run', default=
 parser.add_argument('-e', '--end-run', type=int, help='Ending run', default=355872)
 parser.add_argument('-ns', '--nsigma', type=int, default=2, help='Width of the cut in units of sigma.')
 parser.add_argument('-r', '--max-range', type=int, default=10, help='Maximum range of the distribution.')
+parser.add_argument('--energy-cuts', action="store_true", default=False, help='apply energy cuts')
 
 args = parser.parse_args()
+
+# arguments
+nSigma = args.nsigma
+maxRange = args.max_range
 
 dt = datetime.now()
 date = '{:04d}_{:02d}_{:02d}'.format(dt.year, dt.month, dt.day)
@@ -51,12 +56,24 @@ with open('FILELIST_{}_{}'.format(args.start_run,args.end_run), 'w') as f:
         f.write(file)
         f.write('\n')
 
-path_to_output = '/eos/cms/store/group/dpg_ecal/alca_ecalcalib/EcalTiming/Run2022A/Calibration/{}_{}/'.format(args.start_run,args.end_run)
+if args.energy_cuts:
+    path_to_output = '/eos/cms/store/group/dpg_ecal/alca_ecalcalib/EcalTiming/Run2022A/Calibration/{}_{}_Ethresh_tCut_{}/'.format(args.start_run,args.end_run,maxRange)
+else: path_to_output = '/eos/cms/store/group/dpg_ecal/alca_ecalcalib/EcalTiming/Run2022A/Calibration/{}_{}_tCut_{}/'.format(args.start_run,args.end_run,maxRange)
 
 with open('EcalTimingCalibration_cfg_{}_{}.py'.format(args.start_run,args.end_run),'w') as f:
     for line in lines:
         if '<FILELIST>' in line: line = line.replace('<FILELIST>',fstr)
         if '<OUTPUT>' in line: line = line.replace('<OUTPUT>',path_to_output)
+        if '<EBEnergy>' in line:
+            if args.energy_cuts:
+                line = line.replace('<EBEnergy>', '2.02')
+            else: line = line.replace('<EBEnergy>', '0.5')
+        if '<EEEnergy>' in line:
+            if args.energy_cuts:
+                line = line.replace('<EEEnergy>', '4.6')
+            else: line = line.replace('<EEEnergy>', '0.5')
+        if '<TCut>' in line:
+            line = line.replace('<TCut>', str(maxRange))
         f.write(line)
 
 if not os.path.exists(path_to_output):
@@ -86,9 +103,7 @@ cwhite = np.array([1, 1, 1, 1])
 newcolors[:1, :] = cwhite
 newcmp = ListedColormap(newcolors)
 
-# arguments
-nSigma = args.nsigma
-maxRange = args.max_range
+
 
 path_to_input='/eos/cms/store/group/dpg_ecal/alca_ecalcalib/automation_prompt/timing/'
 
@@ -438,11 +453,11 @@ for ieta_, iphi_ in bad_EB_list:
     plt.xlim(minx, maxx)
     plt.savefig('{}/plots/bad_channels/EB_xtal_time_ieta_{}_iphi_{}.png'.format(path_to_output, ieta_, iphi_))
     plt.close()
-'''
+
+
 os.system('EcalTimingCalibration EcalTimingCalibration_cfg_{}_{}.py'.format(args.start_run,args.end_run))
 os.system('mv EcalTimingCalibration_cfg_{}_{}.py {}'.format(args.start_run,args.end_run,path_to_output))
 os.system('mv FILELIST_{}_{} {}'.format(args.start_run,args.end_run,path_to_output))
 os.system('cp {out}/ecalTiming-corr.dat {out}/ecalTiming-corr_{date}.dat'.format(out=path_to_output, date=date))
-os.system('python makeTimingXML.py --tag=EcalTimeCalibConstants_v01_express --calib={}/ecalTiming-corr_{}.dat'.format(path_to_output,date))
-os.system('python makeTimingSqlite.py --tag=EcalTimeCalibConstants_Prompt2022_v1 --calib={}/ecalTiming-abs_{}.xml'.format(path_to_output,date))
-'''
+#os.system('python makeTimingXML.py --tag=EcalTimeCalibConstants_v01_prompt --calib={}/ecalTiming-corr_{}.dat'.format(path_to_output,date))
+#os.system('python makeTimingSqlite.py --tag=EcalTimeCalibConstants_v01_prompt --calib={}/ecalTiming-abs_{}.xml'.format(path_to_output,date))

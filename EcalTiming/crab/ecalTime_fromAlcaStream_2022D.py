@@ -182,6 +182,19 @@ process.GlobalTag = cms.ESSource("PoolDBESSource",
                                  CondDBSetup,
                                  globaltag = cms.string(options.globaltag),
                                  connect = cms.string('frontier://FrontierProd/CMS_CONDITIONS'),
+                                 toGet = cms.VPSet(
+                               cms.PSet(
+                                   #connect = cms.string('sqlite_file:src/EcalTiming/EcalTiming/data/templates/ecaltemplates_popcon_run_357268.db'),
+                                   connect = cms.string('sqlite_file:../data/templates/ecaltemplates_popcon_run_357268.db'),
+                                   record = cms.string("EcalPulseShapesRcd"),
+                                   tag = cms.string("EcalPulseShapes_data")
+                                   ),
+                               cms.PSet(
+                                   record = cms.string('EcalTimeCalibConstantsRcd'),
+                                   tag = cms.string('EcalTimeCalibConstants_v01_prompt'),
+                                   connect = cms.string('sqlite_file:../data/templates/ecalTiming-abs_2022_08_09_postPS.db'),
+            )
+        )
 )
 
 
@@ -309,6 +322,7 @@ if(options.isSplash==0):
     process.digiStep = cms.Sequence()
 
 
+
 evtPlots = True if options.isSplash else False
 
 if doAnalysis:
@@ -331,7 +345,7 @@ if doReco:
     if options.isSplash:
         process.seq += cms.Sequence( process.filter * process.EcalTimingEventSeq )
     else:
-        process.reco = cms.Sequence( (process.filter 
+        process.reco = cms.Sequence( (process.filter
                       + process.digiStep 
                       + process.reco_step)
                       * process.EcalTimingEventSeq
@@ -341,7 +355,31 @@ if doReco:
 if doAnalysis:
     process.seq += process.analysis
 
-#process.p = cms.Path(process.seq)
+'''
+from Configuration.AlCa.GlobalTag import GlobalTag
+
+process.GlobalTag = GlobalTag(process.GlobalTag, '124X_dataRun3_Prompt_v4', '')
+if not hasattr(process.GlobalTag,'toGet'):
+    process.GlobalTag.toGet=cms.VPSet()
+
+process.GlobalTag.toGet.extend( cms.VPSet(
+        cms.PSet(
+            connect = cms.string('sqlite_file:/eos/cms/store/group/dpg_ecal/alca_ecalcalib/automation_prompt/pulseshapes/357803/ecaltemplates_popcon_run_357815.db'),
+            record = cms.string("EcalPulseShapesRcd"),
+            tag = cms.string("EcalPulseShapes_prompt")
+            ),
+        cms.PSet(
+            record = cms.string('EcalTimeCalibConstantsRcd'),
+            tag = cms.string('EcalTimeCalibConstants_prompt_v01'),
+            connect = cms.string('sqlite_file:/eos/cms/store/group/dpg_ecal/alca_ecalcalib/EcalTiming/Run2022A/Calibration/356996_357005/ecalTiming-abs_2022_08_09.db'),
+            )
+        )
+)
+'''
+
+
+
+process.p = cms.Path(process.seq)
 from datetime import datetime
 processDumpFilename = "processDump" + datetime.now().strftime("%M%S%f") + ".py"
 with open(processDumpFilename, 'w') as processDumpFile:
