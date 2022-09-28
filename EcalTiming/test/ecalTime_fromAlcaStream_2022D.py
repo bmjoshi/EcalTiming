@@ -183,17 +183,10 @@ process.GlobalTag = cms.ESSource("PoolDBESSource",
                                  globaltag = cms.string(options.globaltag),
                                  connect = cms.string('frontier://FrontierProd/CMS_CONDITIONS'),
                                  toGet = cms.VPSet(
-#                               cms.PSet(
-#                                   connect = cms.string('sqlite_file:src/EcalTiming/EcalTiming/data/templates/ecaltemplates_popcon_run_357268.db'),
-#                                   connect = cms.string('sqlite_file:../data/templates/ecaltemplates_popcon_run_357268.db'),
-#                                   record = cms.string("EcalPulseShapesRcd"),
-#                                   tag = cms.string("EcalPulseShapes_data")
-#                                   ),
                                cms.PSet(
                                    record = cms.string('EcalTimeCalibConstantsRcd'),
-                                   tag = cms.string('EcalTimeCalibConstants_v01_prompt'),
-                                   connect = cms.string('sqlite_file:src/EcalTiming/EcalTiming/data/templates/ecalTiming-abs_2022_08_23_prompttag.db'),
-#                                  connect = cms.string('sqlite_file:../data/templates/ecalTiming-abs_2022_09_14_prompttag.db'),
+                                   tag = cms.string('EcalTimeCalibConstants_Prompt2022_v1'),
+                                   connect = cms.string('sqlite_file:/eos/cms/store/group/dpg_ecal/alca_ecalcalib/EcalTiming/Run2022A/Calibration/356996_357005_tCut_10/ecalTiming-abs_2022_08_09.db'),
             )
         )
 )

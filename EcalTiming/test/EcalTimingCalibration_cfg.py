@@ -30,7 +30,9 @@ process.calibOpt = cms.PSet(
     nSigma = cms.int32(2),
 
     ## maxRange
-    maxRange = cms.int32(10)
-    
+    maxRange = cms.int32(<TCut>),
+   
+    ebECut = cms.double(<EBEnergy>),
+    eeECut = cms.double(<EEEnergy>)
 )
 

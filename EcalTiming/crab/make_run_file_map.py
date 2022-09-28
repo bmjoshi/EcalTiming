@@ -15,8 +15,12 @@ json_filename = 'run_file_map_{}.json'.format(_dataset.replace('/','_')[1:])
 run_map = {}
 files = []
 
+if os.path.exists(json_filename):
+    with open(json_filename, 'r') as f0:
+        run_map = json.load(f0)
+
 cmd = 'dasgoclient --query "file dataset={}"'.format(_dataset)
-files = [ f.strip('\r\n') for f in os.popen(cmd).readlines()]
+files = [ f.strip('\r\n') for f in os.popen(cmd).readlines()][:10]
 
 # check if file are present
 if len(files)==0:
@@ -30,7 +34,7 @@ for ifile, f in enumerate(files):
         for run in runs:
            run = run.strip('\r\n')
            if run in run_map:
-                run_map[run].append(f)
+               if f not in run_map[run]: run_map[run].append(f)
            else:
                 run_map[run] = [f]
 

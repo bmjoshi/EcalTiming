@@ -1,2 +1,6 @@
 processDump*py
 corrections
+*db
+*xml
+*dat
+../test/EcalTimingCalibration_local.py
