@@ -62,7 +62,7 @@ options.register('streamName',
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.string,
                  "type of stream: AlCaPhiSym or AlCaP0")
-options.register('globaltag',
+options.register('globalTag',
                  'auto:run3_data_prompt',
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.string,
@@ -165,7 +165,7 @@ process.spashesHltFilter = HLTrigger.HLTfilters.hltHighLevel_cfi.hltHighLevel.cl
 
 # GLOBAL-TAG
 from Configuration.AlCa.GlobalTag import GlobalTag
-process.GlobalTag = GlobalTag(process.GlobalTag, options.globaltag, '')
+process.GlobalTag = GlobalTag(process.GlobalTag, options.globalTag, '')
 
 ##  This section is for grabbing the constants from a FrontierPrep for validation
 #from CondCore.DBCommon.CondDBSetup_cfi import *

@@ -266,7 +266,7 @@ int main(int argc, char** argv)
    tree->SetBranchAddress("event", &event, &b_event);
    tree->SetBranchAddress("bx", &bx, &b_bx);
 
-   int nEvents = 0;
+   auto nEvents = tree->GetEntries();
 
    if(maxEvents == -1) nEvents = tree->GetEntries();
    else {
@@ -289,13 +289,13 @@ int main(int argc, char** argv)
       ringMap[ix][iy][iz] = iRing;
       timingEventsMap_time[ix][iy][iz].push_back(time); 
       timingEventsMap_energy[ix][iy][iz].push_back(energy);
-      timingEventsHWMap_time[elecID].push_back(time);
-      timingEventsRingMap_time[iRing].push_back(time);
-      timingEventBX_time[bx][iz].push_back(time);
+      // timingEventsHWMap_time[elecID].push_back(time);
+      // timingEventsRingMap_time[iRing].push_back(time);
+      // timingEventBX_time[bx][iz].push_back(time);
 
-      if(energy > 3.) timingEventBX_time_3GeV[bx][iz].push_back(time);
-      if(energy > 4.) timingEventBX_time_4GeV[bx][iz].push_back(time);
-      if(energy > 5.) timingEventBX_time_5GeV[bx][iz].push_back(time);
+      // if(energy > 3.) timingEventBX_time_3GeV[bx][iz].push_back(time);
+      // if(energy > 4.) timingEventBX_time_4GeV[bx][iz].push_back(time);
+      // if(energy > 5.) timingEventBX_time_5GeV[bx][iz].push_back(time);
 
    }
 
@@ -349,116 +349,116 @@ int main(int argc, char** argv)
             float correction =  -1*untils->getMeanWithinNSigma(nSigma,maxRange);
             timeCalibConstants.setValue(rawIDMap[tx.first][ty.first][tz.first], correction);
 
-            untils->clear();
-            untils->add(timingEventsMap_energy[tx.first][ty.first][tz.first]); 
-            meanEMap[rawIDMap[tx.first][ty.first][tz.first]] = untils->mean();
+   //          untils->clear();
+   //          untils->add(timingEventsMap_energy[tx.first][ty.first][tz.first]); 
+   //          meanEMap[rawIDMap[tx.first][ty.first][tz.first]] = untils->mean();
 
-            if(tz.first == 0) {
-               EneMapEB_->Fill(iphi,ieta, untils->mean()); 
-               RechitEneEB_->Fill(untils->mean());  
-            } else if(tz.first == 1) {
-               EneMapEEM_->Fill(ix,iy, untils->mean());
-               RechitEneEEM_->Fill(untils->mean());
-            } else if(tz.first == 2) {
-               EneMapEEP_->Fill(ix,iy, untils->mean());
-               RechitEneEEP_->Fill(untils->mean());
-            }
+   //          if(tz.first == 0) {
+   //             EneMapEB_->Fill(iphi,ieta, untils->mean()); 
+   //             RechitEneEB_->Fill(untils->mean());  
+   //          } else if(tz.first == 1) {
+   //             EneMapEEM_->Fill(ix,iy, untils->mean());
+   //             RechitEneEEM_->Fill(untils->mean());
+   //          } else if(tz.first == 2) {
+   //             EneMapEEP_->Fill(ix,iy, untils->mean());
+   //             RechitEneEEP_->Fill(untils->mean());
+   //          }
 
-            untils->clear();
-            untils->add(timingEventsHWMap_time[elecIDMap[tx.first][ty.first][tz.first]]); 
+   //          untils->clear();
+   //          untils->add(timingEventsHWMap_time[elecIDMap[tx.first][ty.first][tz.first]]); 
 
-            if(tz.first == 0) {
-               HWTimeMapEB_->Fill(iphi,ieta, untils->mean());   
-            } else if(tz.first == 1) {
-               HWTimeMapEEM_->Fill(ix,iy, untils->mean());
-            } else if(tz.first == 2) {
-               HWTimeMapEEP_->Fill(ix,iy, untils->mean());
-            }
+   //          if(tz.first == 0) {
+   //             HWTimeMapEB_->Fill(iphi,ieta, untils->mean());   
+   //          } else if(tz.first == 1) {
+   //             HWTimeMapEEM_->Fill(ix,iy, untils->mean());
+   //          } else if(tz.first == 2) {
+   //             HWTimeMapEEP_->Fill(ix,iy, untils->mean());
+   //          }
 
-            untils->clear();
-            untils->add(timingEventsRingMap_time[ringMap[tx.first][ty.first][tz.first]]); 
+   //          untils->clear();
+   //          untils->add(timingEventsRingMap_time[ringMap[tx.first][ty.first][tz.first]]); 
 
-            if(tz.first == 0) {
-               RingTimeMapEB_->Fill(iphi,ieta, untils->mean());   
-            } else if(tz.first == 1) {
-               RingTimeMapEEM_->Fill(ix,iy, untils->mean());
-            } else if(tz.first == 2) {
-               RingTimeMapEEP_->Fill(ix,iy, untils->mean());
-            }
+   //          if(tz.first == 0) {
+   //             RingTimeMapEB_->Fill(iphi,ieta, untils->mean());   
+   //          } else if(tz.first == 1) {
+   //             RingTimeMapEEM_->Fill(ix,iy, untils->mean());
+   //          } else if(tz.first == 2) {
+   //             RingTimeMapEEP_->Fill(ix,iy, untils->mean());
+   //          }
 
          }
 
-   for(auto tx : timingEventBX_time) 
-      for(auto tz : tx.second) {
+   // for(auto tx : timingEventBX_time) 
+   //    for(auto tz : tx.second) {
 
-         untils->clear();
-         untils->add(timingEventBX_time[tx.first][tz.first]); 
+   //       untils->clear();
+   //       untils->add(timingEventBX_time[tx.first][tz.first]); 
 
-         if(untils->num() == 0) continue; 
+   //       if(untils->num() == 0) continue; 
 
-         if(tz.first == 0) BXTimeEB_->SetBinContent(BXTimeEB_->FindBin(tx.first),untils->getMeanWithinNSigma(nSigma,maxRange));
-         else if(tz.first == 1) BXTimeEEM_->SetBinContent(BXTimeEEM_->FindBin(tx.first),untils->getMeanWithinNSigma(nSigma,maxRange));
-         else if(tz.first == 2) BXTimeEEP_->SetBinContent(BXTimeEEP_->FindBin(tx.first),untils->getMeanWithinNSigma(nSigma,maxRange));
+   //       if(tz.first == 0) BXTimeEB_->SetBinContent(BXTimeEB_->FindBin(tx.first),untils->getMeanWithinNSigma(nSigma,maxRange));
+   //       else if(tz.first == 1) BXTimeEEM_->SetBinContent(BXTimeEEM_->FindBin(tx.first),untils->getMeanWithinNSigma(nSigma,maxRange));
+   //       else if(tz.first == 2) BXTimeEEP_->SetBinContent(BXTimeEEP_->FindBin(tx.first),untils->getMeanWithinNSigma(nSigma,maxRange));
 
-         if(tz.first == 0) BXTimeEB_->SetBinError(BXTimeEB_->FindBin(tx.first),untils->getMeanErrorWithinNSigma(nSigma,maxRange));
-         else if(tz.first == 1) BXTimeEEM_->SetBinError(BXTimeEEM_->FindBin(tx.first),untils->getMeanErrorWithinNSigma(nSigma,maxRange));
-         else if(tz.first == 2) BXTimeEEP_->SetBinError(BXTimeEEP_->FindBin(tx.first),untils->getMeanErrorWithinNSigma(nSigma,maxRange));
+   //       if(tz.first == 0) BXTimeEB_->SetBinError(BXTimeEB_->FindBin(tx.first),untils->getMeanErrorWithinNSigma(nSigma,maxRange));
+   //       else if(tz.first == 1) BXTimeEEM_->SetBinError(BXTimeEEM_->FindBin(tx.first),untils->getMeanErrorWithinNSigma(nSigma,maxRange));
+   //       else if(tz.first == 2) BXTimeEEP_->SetBinError(BXTimeEEP_->FindBin(tx.first),untils->getMeanErrorWithinNSigma(nSigma,maxRange));
 
-         if(tz.first == 0) BXTimeEB_Num_->SetBinContent(BXTimeEB_Num_->FindBin(tx.first),untils->num());
-         else if(tz.first == 1) BXTimeEEM_Num_->SetBinContent(BXTimeEEM_Num_->FindBin(tx.first),untils->num());
-         else if(tz.first == 2) BXTimeEEP_Num_->SetBinContent(BXTimeEEP_Num_->FindBin(tx.first),untils->num());
+   //       if(tz.first == 0) BXTimeEB_Num_->SetBinContent(BXTimeEB_Num_->FindBin(tx.first),untils->num());
+   //       else if(tz.first == 1) BXTimeEEM_Num_->SetBinContent(BXTimeEEM_Num_->FindBin(tx.first),untils->num());
+   //       else if(tz.first == 2) BXTimeEEP_Num_->SetBinContent(BXTimeEEP_Num_->FindBin(tx.first),untils->num());
 
-      }
+   //    }
 
-   //test different EB energy thresholds 
+   // //test different EB energy thresholds 
 
-   for(auto tx : timingEventBX_time_3GeV) 
-      for(auto tz : tx.second) {
+   // for(auto tx : timingEventBX_time_3GeV) 
+   //    for(auto tz : tx.second) {
 
-         untils->clear();
-         untils->add(timingEventBX_time_3GeV[tx.first][tz.first]); 
+   //       untils->clear();
+   //       untils->add(timingEventBX_time_3GeV[tx.first][tz.first]); 
 
-         if(untils->num() == 0) continue; 
+   //       if(untils->num() == 0) continue; 
 
-         if(tz.first == 0) {
-            BXTimeEB_3GeV_->SetBinContent(BXTimeEB_3GeV_->FindBin(tx.first),untils->getMeanWithinNSigma(nSigma,maxRange));
-            BXTimeEB_3GeV_->SetBinError(BXTimeEB_3GeV_->FindBin(tx.first),untils->getMeanErrorWithinNSigma(nSigma,maxRange));
-            BXTimeEB_Num_3GeV_->SetBinContent(BXTimeEB_Num_3GeV_->FindBin(tx.first),untils->num());
-         }
+   //       if(tz.first == 0) {
+   //          BXTimeEB_3GeV_->SetBinContent(BXTimeEB_3GeV_->FindBin(tx.first),untils->getMeanWithinNSigma(nSigma,maxRange));
+   //          BXTimeEB_3GeV_->SetBinError(BXTimeEB_3GeV_->FindBin(tx.first),untils->getMeanErrorWithinNSigma(nSigma,maxRange));
+   //          BXTimeEB_Num_3GeV_->SetBinContent(BXTimeEB_Num_3GeV_->FindBin(tx.first),untils->num());
+   //       }
 
-      }
+   //    }
 
-   for(auto tx : timingEventBX_time_4GeV) 
-      for(auto tz : tx.second) {
+   // for(auto tx : timingEventBX_time_4GeV) 
+   //    for(auto tz : tx.second) {
 
-         untils->clear();
-         untils->add(timingEventBX_time_4GeV[tx.first][tz.first]); 
+   //       untils->clear();
+   //       untils->add(timingEventBX_time_4GeV[tx.first][tz.first]); 
 
-         if(untils->num() == 0) continue; 
+   //       if(untils->num() == 0) continue; 
 
-         if(tz.first == 0) {
-            BXTimeEB_4GeV_->SetBinContent(BXTimeEB_4GeV_->FindBin(tx.first),untils->getMeanWithinNSigma(nSigma,maxRange));
-            BXTimeEB_4GeV_->SetBinError(BXTimeEB_4GeV_->FindBin(tx.first),untils->getMeanErrorWithinNSigma(nSigma,maxRange));
-            BXTimeEB_Num_4GeV_->SetBinContent(BXTimeEB_Num_4GeV_->FindBin(tx.first),untils->num());
-         }
+   //       if(tz.first == 0) {
+   //          BXTimeEB_4GeV_->SetBinContent(BXTimeEB_4GeV_->FindBin(tx.first),untils->getMeanWithinNSigma(nSigma,maxRange));
+   //          BXTimeEB_4GeV_->SetBinError(BXTimeEB_4GeV_->FindBin(tx.first),untils->getMeanErrorWithinNSigma(nSigma,maxRange));
+   //          BXTimeEB_Num_4GeV_->SetBinContent(BXTimeEB_Num_4GeV_->FindBin(tx.first),untils->num());
+   //       }
 
-      }
+   //    }
 
-   for(auto tx : timingEventBX_time_5GeV) 
-      for(auto tz : tx.second) {
+   // for(auto tx : timingEventBX_time_5GeV) 
+   //    for(auto tz : tx.second) {
 
-         untils->clear();
-         untils->add(timingEventBX_time_5GeV[tx.first][tz.first]); 
+   //       untils->clear();
+   //       untils->add(timingEventBX_time_5GeV[tx.first][tz.first]); 
 
-         if(untils->num() == 0) continue; 
+   //       if(untils->num() == 0) continue; 
 
-         if(tz.first == 0) {
-            BXTimeEB_5GeV_->SetBinContent(BXTimeEB_5GeV_->FindBin(tx.first),untils->getMeanWithinNSigma(nSigma,maxRange));
-            BXTimeEB_5GeV_->SetBinError(BXTimeEB_5GeV_->FindBin(tx.first),untils->getMeanErrorWithinNSigma(nSigma,maxRange));
-            BXTimeEB_Num_5GeV_->SetBinContent(BXTimeEB_Num_5GeV_->FindBin(tx.first),untils->num());
-         }
+   //       if(tz.first == 0) {
+   //          BXTimeEB_5GeV_->SetBinContent(BXTimeEB_5GeV_->FindBin(tx.first),untils->getMeanWithinNSigma(nSigma,maxRange));
+   //          BXTimeEB_5GeV_->SetBinError(BXTimeEB_5GeV_->FindBin(tx.first),untils->getMeanErrorWithinNSigma(nSigma,maxRange));
+   //          BXTimeEB_Num_5GeV_->SetBinContent(BXTimeEB_Num_5GeV_->FindBin(tx.first),untils->num());
+   //       }
 
-      }
+   //    }
 
    ofstream fout((outputDir+outputCalib).c_str(), ios::out | ios::trunc);  
 
