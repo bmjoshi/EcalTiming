@@ -23,7 +23,7 @@
 
 // user include files
 #include "FWCore/Framework/interface/Frameworkfwd.h"
-#include "FWCore/Framework/interface/EDProducer.h"
+#include "FWCore/Framework/interface/one/EDProducer.h"
 
 #include "FWCore/Framework/interface/Event.h"
 #include "FWCore/Framework/interface/MakerMacros.h"
@@ -36,7 +36,7 @@
 // class declaration
 //
 
-class RecHitSelector : public edm::EDProducer {
+class RecHitSelector : public edm::one::EDProducer<> {
    public:
       explicit RecHitSelector(const edm::ParameterSet&);
       ~RecHitSelector();

@@ -56,7 +56,6 @@
 #include "FWCore/Framework/interface/Frameworkfwd.h"
 #include "FWCore/Framework/interface/EDConsumerBase.h"
 
-#include "FWCore/Framework/interface/EDProducer.h"
 #include "FWCore/Framework/interface/Event.h"
 //#include "FWCore/Framework/interface/Handle.h"
 #include "FWCore/Framework/interface/MakerMacros.h"
@@ -66,7 +65,7 @@
 #include "DataFormats/Common/interface/Handle.h"
 //#include "FWCore/Framework/interface/LooperFactory.h"
 //#include "FWCore/Framework/interface/ESProducerLooper.h"
-#include "FWCore/Framework/interface/EDFilter.h"
+#include "FWCore/Framework/interface/one/EDFilter.h"
 #include "FWCore/Framework/interface/ESHandle.h"
 #include "FWCore/Framework/interface/ESProducts.h"
 #include "FWCore/Framework/interface/Event.h"
@@ -123,7 +122,7 @@
 
 #include "EcalTiming/EcalTiming/interface/EcalTimeCalibrationMapFwd.h"
 
-class EcalTimingCalibProducer : public edm::EDFilter
+class EcalTimingCalibProducer : public edm::one::EDFilter<>
 {
 
 private:

@@ -23,7 +23,7 @@
 
 // user include files
 #include "FWCore/Framework/interface/Frameworkfwd.h"
-#include "FWCore/Framework/interface/EDProducer.h"
+#include "FWCore/Framework/interface/one/EDProducer.h"
 
 #include "FWCore/Framework/interface/Event.h"
 #include "FWCore/Framework/interface/MakerMacros.h"
@@ -37,7 +37,7 @@
 // class declaration
 //
 
-class EcalTimingEventProducer : public edm::EDProducer {
+class EcalTimingEventProducer : public edm::one::EDProducer<> {
    public:
       explicit EcalTimingEventProducer(const edm::ParameterSet&);
       ~EcalTimingEventProducer();
