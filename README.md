@@ -3,16 +3,14 @@ EcalTiming
 
 1) Install:
 
-    * scram project CMSSW_10_6_14
-    * cd CMSSW_10_6_14
-    * cmsenv
-    * git cms-init 
-    * git cms-merge-topic bmarzocc:EcalTiming_10_6_X
-    * git clone  git@github.com:bmarzocc/EcalTiming.git
-    * cd EcalTiming
-    * git checkout EcalTiming_UltraLegacy
-    * cd -
-    * scram b -j 10
+```
+cmsrel CMSSW_12_6_2
+cd CMSSW_12_6_2/src
+cmsenv
+git clone git@github.com:bmjoshi/EcalTiming.git  
+git checkout -b Run3_CMSSW_12_X
+scram b -j 10
+```
 
 2) Run local:
 
