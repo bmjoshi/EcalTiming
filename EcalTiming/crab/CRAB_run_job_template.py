@@ -12,14 +12,14 @@ except ImportError:
 
 config = config()
 
-config.General.requestName = 'AlCaPhiSym_Run2022D-v1_RAW_<RUN>'
+config.General.requestName = 'AlCaPhiSym_Run2023B-v1_RAW_<RUN>'
 config.General.workArea = 'crab_projects/Production_<DATE>'
 config.General.transferOutputs = True
 config.General.transferLogs = True
 
 config.JobType.pluginName = 'Analysis'
 config.JobType.pyCfgParams = ['outputFile=timing_reco_selections.root', 'globaltag=<GT>']
-config.JobType.psetName = 'ecalTime_fromAlcaStream_2022D.py'
+config.JobType.psetName = 'ecalTime_fromAlcaStream.py'
 
 config.JobType.allowUndistributedCMSSW = True
 config.JobType.maxJobRuntimeMin = 1440
@@ -31,7 +31,7 @@ config.Data.userInputFiles = [<FILES>]
 config.Data.inputDBS      = 'global'
 config.Data.splitting     = 'FileBased' #'LumiBased' / 'FileBased'
 config.Data.unitsPerJob   = <NFILES> #30000
-config.Data.outLFNDirBase = '/store/group/dpg_ecal/alca_ecalcalib/EcalTiming/Run2022D_Prompt/'
+config.Data.outLFNDirBase = '/store/group/dpg_ecal/alca_ecalcalib/EcalTiming/Run2023B_Prompt/'
 config.Data.publication   = False
 config.Data.allowNonValidInputDataset = True
 
