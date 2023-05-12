@@ -4,7 +4,7 @@ EcalTiming
 1) Install:
 
 ```
-cmsrel CMSSW_13_0_23
+cmsrel CMSSW_13_0_3
 cd CMSSW_13_0_3/src
 cmsenv
 git clone git@github.com:bmjoshi/EcalTiming.git  
