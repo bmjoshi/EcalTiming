@@ -8,7 +8,7 @@ cmsrel CMSSW_13_0_23
 cd CMSSW_13_0_3/src
 cmsenv
 git clone git@github.com:bmjoshi/EcalTiming.git  
-git checkout -b Run3_CMSSW_12_X
+git checkout -b Run3_CMSSW_13_X
 scram b -j 10
 ```
 
