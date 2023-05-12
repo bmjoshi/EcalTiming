@@ -4,8 +4,8 @@ EcalTiming
 1) Install:
 
 ```
-cmsrel CMSSW_12_6_2
-cd CMSSW_12_6_2/src
+cmsrel CMSSW_13_0_23
+cd CMSSW_13_0_3/src
 cmsenv
 git clone git@github.com:bmjoshi/EcalTiming.git  
 git checkout -b Run3_CMSSW_12_X
@@ -16,7 +16,7 @@ scram b -j 10
 
 ```
 cd EcalTiming/EcalTiming/
-cmsRun test/ecalTime_fromAlcaStream_cfg.py files=root://cms-xrd-global.cern.ch//store/data/Run2023B/ globaltag=130X_dataRun3_v2
+cmsRun test/ecalTime_fromAlcaStream_cfg.py files=root://cms-xrd-global.cern.ch//store/data/Run2023C/AlCaPhiSym/RAW/v1/000/367/260/00000/6612587f-87e5-4228-943f-30505384b0b0.root globaltag=130X_dataRun3_v2
 ```
  NOTE: the outputs are produced in one step and CANNOT BE MERGED with other outputs.
     
