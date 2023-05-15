@@ -67,10 +67,20 @@ options.register('streamName',
                  VarParsing.VarParsing.varType.string,
                  "type of stream: AlCaPhiSym or AlCaP0")
 options.register('globaltag',
-                 '124X_dataRun3_Prompt_v4',
+                 '130X_dataRun3_Prompt_v2',
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.string,
                  "Global tag to use, no default")
+options.register('useCustomTimeCalib',
+                 False,
+                 VarParsing.VarParsing.multiplicity.singleton,
+                 VarParsing.VarParsing.varType.bool,
+                 "Use custom time calibration record. By default, it uses CondDB entry.")
+options.register('sqliteRecord',
+                 'file:../test/template/tmp.sqlite',
+                 VarParsing.VarParsing.multiplicity.singleton,
+                 VarParsing.VarParsing.varType.string,
+                 "Path to the sqlite file contianing time calib record.")
 options.register('loneBunch',
                    0,
                    VarParsing.VarParsing.multiplicity.singleton,
@@ -95,9 +105,6 @@ else:
     print("stream ",options.streamName," not foreseen")
     exit
 
-#options.files = cms.untracked.vstring
-#options.streamName = cms.untracked.vstring
-options.maxEvents = -1 # -1 means all events
 ### get and parse the command line arguments
 options.parseArguments()
 print(options)
@@ -178,11 +185,26 @@ process.spashesHltFilter = HLTrigger.HLTfilters.hltHighLevel_cfi.hltHighLevel.cl
 from CondCore.CondDB.CondDB_cfi import *
 CondDBSetup = CondDB.clone()
 CondDBSetup.__delattr__('connect')
-process.GlobalTag = cms.ESSource("PoolDBESSource",
+
+
+if (options.useCustomTimeCalib): 
+    process.GlobalTag = cms.ESSource("PoolDBESSource",
                                  CondDBSetup,
                                  globaltag = cms.string(options.globaltag),
                                  connect = cms.string('frontier://FrontierProd/CMS_CONDITIONS'),
-)
+                                 toGet = cms.VPSet(
+                               cms.PSet(
+                                   record = cms.string('EcalTimeCalibConstantsRcd'),
+                                   tag = cms.string('EcalTimeCalibConstants_v01_prompt'),
+                                   connect = cms.string(options.sqliteRecord),
+            )
+        )
+    )
+else:
+    process.GlobalTag = cms.ESSource("PoolDBESSource",
+                                     CondDBSetup,
+                                     globaltag = cms.string(options.globaltag),
+                                     connect = cms.string('frontier://FrontierProd/CMS_CONDITIONS'))
 
 
 ## Process Digi To Raw Step
@@ -199,6 +221,8 @@ SkipEvent = cms.untracked.vstring('ProductNotFound','EcalProblem')
 
 # dbs search --query "find file where dataset=/ExpressPhysics/BeamCommissioning09-Express-v2/FEVT and run=124020" | grep store | awk '{printf "\"%s\",\n", $1}'
 # Input source
+
+#options.files = "file:/eos/cms//store/data/Run2023B/AlCaPhiSym/RAW/v1/000/366/873/00000/0a336950-1fbb-46be-bd5a-be8bc0f74c81.root"
 print("source files:",options.files)
 process.source = cms.Source("PoolSource",
     secondaryFileNames = cms.untracked.vstring(),
@@ -309,6 +333,7 @@ if(options.isSplash==0):
     process.digiStep = cms.Sequence()
 
 
+
 evtPlots = True if options.isSplash else False
 
 if doAnalysis:
@@ -331,7 +356,7 @@ if doReco:
     if options.isSplash:
         process.seq += cms.Sequence( process.filter * process.EcalTimingEventSeq )
     else:
-        process.reco = cms.Sequence( (process.filter 
+        process.reco = cms.Sequence( (process.filter
                       + process.digiStep 
                       + process.reco_step)
                       * process.EcalTimingEventSeq
@@ -341,7 +366,7 @@ if doReco:
 if doAnalysis:
     process.seq += process.analysis
 
-#process.p = cms.Path(process.seq)
+process.p = cms.Path(process.seq)
 from datetime import datetime
 processDumpFilename = "processDump" + datetime.now().strftime("%M%S%f") + ".py"
 with open(processDumpFilename, 'w') as processDumpFile:

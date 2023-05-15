@@ -18,7 +18,7 @@ config.General.transferOutputs = True
 config.General.transferLogs = True
 
 config.JobType.pluginName = 'Analysis'
-config.JobType.pyCfgParams = ['outputFile=timing_reco_selections.root', 'globaltag=<GT>']
+config.JobType.pyCfgParams = ['outputFile=timing_reco_selections.root', 'globaltag=<GT>' <VALIDATE>]
 config.JobType.psetName = 'ecalTime_fromAlcaStream.py'
 
 config.JobType.allowUndistributedCMSSW = True
