@@ -21,10 +21,13 @@ from matplotlib import colors as clr
 from matplotlib import cm
 from matplotlib.colors import ListedColormap, LinearSegmentedColormap
 
+from plot_calibrations import *
+
 
 parser = argparse.ArgumentParser()
 parser.add_argument('-s', '--start-run', type=int, help='Starting run', default=355862)
 parser.add_argument('-e', '--end-run', type=int, help='Ending run', default=355872)
+parser.add_argument('--era', type=str, default="2023B", help="Run era")
 parser.add_argument('-ns', '--nsigma', type=int, default=2, help='Width of the cut in units of sigma.')
 parser.add_argument('-r', '--max-range', type=int, default=10, help='Maximum range of the distribution.')
 parser.add_argument('--energy-cuts', action="store_true", default=False, help='apply energy cuts')
@@ -58,8 +61,8 @@ with open('FILELIST_{}_{}'.format(args.start_run,args.end_run), 'w') as f:
         f.write('\n')
 
 if args.energy_cuts:
-    path_to_output = '/eos/cms/store/group/dpg_ecal/alca_ecalcalib/EcalTiming/Run2022A/Calibration/{}_{}_Ethresh_tCut_{}/'.format(args.start_run,args.end_run,maxRange)
-else: path_to_output = '/eos/cms/store/group/dpg_ecal/alca_ecalcalib/EcalTiming/Run2022A/Calibration/{}_{}_tCut_{}/'.format(args.start_run,args.end_run,maxRange)
+    path_to_output = '/eos/cms/store/group/dpg_ecal/alca_ecalcalib/EcalTiming/Run{}/Calibration/{}_{}_Ethresh_tCut_{}/'.format(args.era,args.start_run,args.end_run,maxRange)
+else: path_to_output = '/eos/cms/store/group/dpg_ecal/alca_ecalcalib/EcalTiming/Run{}/Calibration/{}_{}_tCut_{}/'.format(args.era,args.start_run,args.end_run,maxRange)
 
 with open('EcalTimingCalibration_cfg_{}_{}.py'.format(args.start_run,args.end_run),'w') as f:
     for line in lines:
@@ -148,6 +151,7 @@ binning_map = {
     }
 }
 
+'''
 # print filenames
 print('reading files...')
 for ifile, filename in enumerate(filelist):
@@ -454,13 +458,24 @@ for ieta_, iphi_ in bad_EB_list:
     plt.xlim(minx, maxx)
     plt.savefig('{}/plots/bad_channels/EB_xtal_time_ieta_{}_iphi_{}.png'.format(path_to_output, ieta_, iphi_))
     plt.close()
-
+'''
 
 os.system('EcalTimingCalibration EcalTimingCalibration_cfg_{}_{}.py'.format(args.start_run,args.end_run))
 os.system('mv EcalTimingCalibration_cfg_{}_{}.py {}'.format(args.start_run,args.end_run,path_to_output))
 os.system('mv FILELIST_{}_{} {}'.format(args.start_run,args.end_run,path_to_output))
 os.system('cp {out}/ecalTiming-corr.dat {out}/ecalTiming-corr_{date}.dat'.format(out=path_to_output, date=date))
-#os.system('python makeTimingXML.py --tag=EcalTimeCalibConstants_v01_prompt --calib={}/ecalTiming-corr_{}.dat'.format(path_to_output,date))
-#os.system('python makeTimingSqlite.py --tag=EcalTimeCalibConstants_v01_prompt --calib={}/ecalTiming-abs_{}.xml'.format(path_to_output,date))
+os.system('python makeTimingXML.py --tag=EcalTimeCalibConstants_v01_prompt --calib={}/ecalTiming-corr_{}.dat'.format(path_to_output,date))
+os.system('python makeTimingSqlite.py --tag=EcalTimeCalibConstants_v01_prompt --calib={}/ecalTiming-abs_{}.xml'.format(path_to_output,date))
 
-'''
+filename=path_to_output+'ecalTiming-corr.dat'
+print(filename)
+runs = filename.split('/')[-2]
+runs = runs.split('_')
+srun = runs[0]
+erun = runs[1]
+plot_2d_map(filename,srun,erun)
+plot_corrections(filename,srun,erun)
+
+webdir = '/eos/user/{}/{}/www/ECAL_timing/Run2023C/Calibration/ '.format(os.environ['USER'][0], os.environ['USER'])
+os.system('ln -s {} {}'.format(path_to_output, webdir))
+os.system('cp /eos/user/{}/{} {}'.format(os.environ['USER'][0],os.environ['USER'],path_to_output))
