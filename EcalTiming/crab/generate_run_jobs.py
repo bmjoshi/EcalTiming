@@ -9,6 +9,7 @@ parser.add_argument('mode',type=str,help="compute/validate; validate will need a
 parser.add_argument('-s','--start-run',type=str,default=367406)
 parser.add_argument('-e','--end-run',type=str,default=367416)
 parser.add_argument('-gt','--global-tag',type=str,default='130X_dataRun3_Prompt_v3')
+parser.add_argument('--era',type=str,default='Test')
 parser.add_argument('-sq','--sqlite-file',type=str,default='ecalTiming-abs.db')
 args = parser.parse_args()
 print(args.mode)
@@ -20,7 +21,7 @@ template_file = 'CRAB_run_job_template.py'
 with open(template_file, 'r') as f0:
     tmp_lines = f0.readlines()
 
-os.system('./clear.sh')
+#os.system('./clear.sh')
 
 tstamp = datetime.now()
 date = '{}{}{}{}{}{}'.format(tstamp.day,tstamp.month,tstamp.year,tstamp.hour,tstamp.minute,tstamp.second)
@@ -55,6 +56,7 @@ for run in runmap:
           if '<DATE>' in line: line = line.replace('<DATE>', date)
           if '<RUN>' in line: line = line.replace('<RUN>', str(run))
           if '<GT>' in line: line = line.replace('<GT>', args.global_tag)
+          if '<ERA>' in line: line = line.replace('<ERA>', args.era)
           if '<NFILES>' in line: line = line.replace('<NFILES>', '1')
           if '<FILES>' in line: line = line.replace('<FILES>', files)
           if '<VALIDATE>' in line:
