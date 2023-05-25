@@ -121,7 +121,7 @@ bool EcalTimingCalibProducer::addRecHit(const EcalTimingEvent& timeEvent, EventT
          for(int bx=0;bx<10;bx++)
             if((*ebUncalibRechitsCollection->find(timeEvent.detid())).outOfTimeAmplitude(bx) > maxOOTAmp)
                maxOOTAmp = (*ebUncalibRechitsCollection->find(timeEvent.detid())).outOfTimeAmplitude(bx);
-         
+
          if (DEBUG) {
             cout << "Amplitude: "<< amplitude <<endl;
             cout<< "maxOOTAmp: "<< maxOOTAmp <<endl;
@@ -362,77 +362,78 @@ void EcalTimingCalibProducer::endJob()
          if	(abs(it.second.mean()) > HW_UNIT * 1.5) std::cout <<  "HW: " << it.first << ' ' << it.second.mean() << std::endl;
       }
    }
-   // remove the entries OOT (time > n_sigma)
-   float n_sigma = 2.; /// \todo remove hard coded number
-   for(auto calibRecHit_itr = _timeCalibMap.begin(); calibRecHit_itr != _timeCalibMap.end(); ++calibRecHit_itr) {
-      FillCalibrationCorrectionHists(calibRecHit_itr); // histograms with shifts to be corrected at each step
-      FillHWCorrectionHists(calibRecHit_itr);
-      float correction =  - calibRecHit_itr->second.getMeanWithinNSigma(n_sigma, 10);  // to reject tails
-      _timeCalibConstants.setValue(calibRecHit_itr->first.rawId(), correction);
 
-      unsigned int ds = DS_NONE;
-      if(calibRecHit_itr->second.num() > 50) {
-         // check the asymmetry of the distribution: if asymmetric, dump the full set of events for further offline studies
-         if(fabs(calibRecHit_itr->second.getSkewnessWithinNSigma(n_sigma, 10)) > _maxSkewnessForDump)  {
-            ds |= DS_HIGH_SKEW;
 
+      // remove the entries OOT (time > n_sigma)
+      float n_sigma = 2.; /// \todo remove hard coded number
+      for(auto calibRecHit_itr = _timeCalibMap.begin(); calibRecHit_itr != _timeCalibMap.end(); ++calibRecHit_itr) {
+         FillCalibrationCorrectionHists(calibRecHit_itr); // histograms with shifts to be corrected at each step
+         FillHWCorrectionHists(calibRecHit_itr);
+         float correction =  - calibRecHit_itr->second.getMeanWithinNSigma(n_sigma, 10);  // to reject tails
+         _timeCalibConstants.setValue(calibRecHit_itr->first.rawId(), correction);
+
+         unsigned int ds = DS_NONE;
+         if(calibRecHit_itr->second.num() > 50) {
+            // check the asymmetry of the distribution: if asymmetric, dump the full set of events for further offline studies
+            if(fabs(calibRecHit_itr->second.getSkewnessWithinNSigma(n_sigma, 10)) > _maxSkewnessForDump)  {
+               ds |= DS_HIGH_SKEW;
+            }
+
+            // check if result is stable as function of energy
+            std::vector< std::pair<float, EcalCrystalTimingCalibration*> > energyStability;
+            float energyThreshold = getEnergyThreshold(calibRecHit_itr->first);
+            if(! calibRecHit_itr->second.isStableInEnergy(energyThreshold, energyThreshold + _minRecHitEnergyStep * _minRecHitEnergyNStep, _minRecHitEnergyStep, energyStability)) {
+               ds |= DS_UNSTABLE_EN;
+            }
+            FillEnergyStabilityHists(calibRecHit_itr, energyStability);
          }
 
-         // check if result is stable as function of energy
-         std::vector< std::pair<float, EcalCrystalTimingCalibration*> > energyStability;
-         float energyThreshold = getEnergyThreshold(calibRecHit_itr->first);
-         if(! calibRecHit_itr->second.isStableInEnergy(energyThreshold, energyThreshold + _minRecHitEnergyStep * _minRecHitEnergyNStep, _minRecHitEnergyStep, energyStability)) {
-            ds |= DS_UNSTABLE_EN;
+         unsigned int elecID = getElecID(calibRecHit_itr->first);
+         if( abs(_HWCalibrationMap[elecID].mean()) > HW_UNIT * 1.5)
+         {
+            ds |= DS_CCU_OOT;
          }
-         FillEnergyStabilityHists(calibRecHit_itr, energyStability);
-      }
 
-      unsigned int elecID = getElecID(calibRecHit_itr->first);
-      if( abs(_HWCalibrationMap[elecID].mean()) > HW_UNIT * 1.5)
-      {
-         ds |= DS_CCU_OOT;
-      }
+         if((calibRecHit_itr->first.rawId() == EBCRYex) ||
+               (calibRecHit_itr->first.rawId() == EECRYex)) ds |= DS_CRYS;
 
-      if((calibRecHit_itr->first.rawId() == EBCRYex) ||
-            (calibRecHit_itr->first.rawId() == EECRYex)) ds |= DS_CRYS;
+         int iRing = _ringTools.getRingIndexInSubdet(calibRecHit_itr->first);
 
-      int iRing = _ringTools.getRingIndexInSubdet(calibRecHit_itr->first);
+         if(calibRecHit_itr->first.subdetId() == EcalBarrel && iRing == EBRING) ds |= DS_RING;
+         else if(calibRecHit_itr->first.subdetId() == EcalEndcap && (iRing == EEmRING || iRing == EEpRING )) ds |= DS_RING;
 
-      if(calibRecHit_itr->first.subdetId() == EcalBarrel && iRing == EBRING) ds |= DS_RING;
-      else if(calibRecHit_itr->first.subdetId() == EcalEndcap && (iRing == EEmRING || iRing == EEpRING )) ds |= DS_RING;
-
-      if(ds != DS_NONE)
-      {
-         int ix, iy, iz;
-         if(calibRecHit_itr->first.subdetId() == EcalBarrel) {
-            EBDetId id(calibRecHit_itr->first);
-            ix = id.ieta();
-            iy = id.iphi();
-            iz = 0;
-         } else {
-            EEDetId id(calibRecHit_itr->first);
-            ix = id.ix();
-            iy = id.iy();
-            iz = id.zside();
+         if(ds != DS_NONE)
+         {
+            int ix, iy, iz;
+            if(calibRecHit_itr->first.subdetId() == EcalBarrel) {
+               EBDetId id(calibRecHit_itr->first);
+               ix = id.ieta();
+               iy = id.iphi();
+               iz = 0;
+            } else {
+               EEDetId id(calibRecHit_itr->first);
+               ix = id.ix();
+               iy = id.iy();
+               iz = id.zside();
+            }
+            calibRecHit_itr->second.dumpToTree(dumpTree, ix, iy, iz, ds, elecID, iRing);
          }
-         calibRecHit_itr->second.dumpToTree(dumpTree, ix, iy, iz, ds, elecID, iRing);
+
+         // add filing Energy hists here
       }
 
-      // add filing Energy hists here
-   }
+      // save txt
+      time_t     now = time(0);
+      struct tm  tstruct;
+      char       current_time[80];
+      tstruct = *localtime(&now);
+      strftime(current_time, sizeof(current_time), "%Y-%m-%d.%X", &tstruct);
 
-   // save txt
-   time_t     now = time(0);
-   struct tm  tstruct;
-   char       current_time[80];
-   tstruct = *localtime(&now);
-   strftime(current_time, sizeof(current_time), "%Y-%m-%d.%X", &tstruct);
-
-   char filename[100];
-   sprintf(filename, "%s.dat", _outputDumpFileName.substr(0, _outputDumpFileName.find(".root")).c_str()); //text file holding constants
-   dumpCalibration(filename);
-   sprintf(filename, "%s-corr.dat", _outputDumpFileName.substr(0, _outputDumpFileName.find(".root")).c_str()); //text file holding constants
-   dumpCorrections(filename);
+      char filename[100];
+      sprintf(filename, "%s.dat", _outputDumpFileName.substr(0, _outputDumpFileName.find(".root")).c_str()); //text file holding constants
+      dumpCalibration(filename);
+      sprintf(filename, "%s-corr.dat", _outputDumpFileName.substr(0, _outputDumpFileName.find(".root")).c_str()); //text file holding constants
+      dumpCorrections(filename);
 }
 
 void EcalTimingCalibProducer::dumpCorrections(std::string filename)
@@ -456,6 +457,7 @@ void EcalTimingCalibProducer::dumpCorrections(std::string filename)
       }
    }
    fout.close();
+
 }
 
 void EcalTimingCalibProducer::dumpCalibration(std::string filename)
@@ -555,8 +557,8 @@ void EcalTimingCalibProducer::FillHWCorrectionHists(EcalTimeCalibrationMap::cons
          HWTimeMapEEP_->Fill(id.ix(), id.iy(), time);
       }
    }
-
 }
+
 void EcalTimingCalibProducer::FillEnergyStabilityHists(EcalTimeCalibrationMap::const_iterator cal_itr, std::vector< std::pair<float, EcalCrystalTimingCalibration*> > energyStability)
 {
 
@@ -592,8 +594,8 @@ void EcalTimingCalibProducer::FillEnergyStabilityHists(EcalTimeCalibrationMap::c
       it->second->dumpCalibToTree(energyStabilityTree,rawid,ix,iy,iz,getElecID(cal_itr->first),iRing);
       index++;
    }
-
 }
+
 void EcalTimingCalibProducer::initEventHists(TFileDirectory fdir)
 {
    Event_EneMapEB_   = fdir.make<TProfile2D>("EneMapEB",   "RecHit Energy[GeV] EB map;i#eta; i#phi;E[GeV]", 171, -85, 86, 360, 1., 361.);

@@ -21,8 +21,12 @@
 <use name="EcalTiming/EcalTiming"/>
 <flags EDM_PLUGIN="1"/>
 <environment>
-  <bin
-      name="EcalTimingCalibration"
-      file="EcalTimingCalibration.cpp">
-  </bin>
+   <bin name="EcalTimingCalibration" file="EcalTimingCalibration.cpp">
+      <use name="boost"/>
+      <use name="boost_program_options"/>
+   </bin>
+   <bin name="RunTimeAverage" file="RunTimeAverage.cpp">
+      <use name="boost"/>
+      <use name="boost_program_options"/> 
+   </bin>
 </environment>
