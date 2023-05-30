@@ -53,7 +53,7 @@ int main(int argc, char** argv)
       else calib.nSigma = 2.0;
 
       if (vm.count("maxRange"))  calib.maxRange = vm["maxRange"].as<float>() ;
-      else calib.maxRange = -1; 
+      else calib.maxRange = 10; 
 
       if (vm.count("ebECut"))  calib.ebECut = vm["ebECut"].as<float>() ;
       else calib.ebECut = 0.5;

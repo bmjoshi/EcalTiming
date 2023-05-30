@@ -72,4 +72,3 @@ bool EcalTimeCalibrationUtils::add(std::vector<float>& timingEvents)
 
         return true;
 }
-

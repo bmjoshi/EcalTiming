@@ -123,21 +123,24 @@ void RunEcalTimingCalibration::Analyze(){
                iy = ty.first;
             }
 
+            float mean_nsigma = untils->getMeanWithinNSigma(nSigma,maxRange);
+            float std_nsigma = untils->getMeanErrorWithinNSigma(nSigma,maxRange);
+
             if(tz.first == 0) {
-               TimeMapEB_->Fill(iphi,ieta, untils->getMeanWithinNSigma(nSigma,maxRange)); 
-               TimeErrorMapEB_->Fill(iphi,ieta, untils->getMeanErrorWithinNSigma(nSigma,maxRange)); 
+               TimeMapEB_->Fill(iphi,ieta, mean_nsigma); 
+               TimeErrorMapEB_->Fill(iphi,ieta, std_nsigma); 
                OccupancyEB_->Fill(iphi,ieta, untils->num()); 
-               RechitTimeEB_->Fill(untils->getMeanWithinNSigma(nSigma,maxRange)); 
+               RechitTimeEB_->Fill(mean_nsigma); 
             } else if(tz.first == 1) {
-               TimeMapEEM_->Fill(ix,iy, untils->getMeanWithinNSigma(nSigma,maxRange));
-               TimeErrorMapEEM_->Fill(ix,iy, untils->getMeanErrorWithinNSigma(nSigma,maxRange));
+               TimeMapEEM_->Fill(ix,iy, mean_nsigma);
+               TimeErrorMapEEM_->Fill(ix,iy, std_nsigma);
                OccupancyEEM_->Fill(ix,iy, untils->num());
-               RechitTimeEEM_->Fill(untils->getMeanWithinNSigma(nSigma,maxRange));
+               RechitTimeEEM_->Fill(mean_nsigma);
             } else if(tz.first == 2) {
-               TimeMapEEP_->Fill(ix,iy, untils->getMeanWithinNSigma(nSigma,maxRange));
-               TimeErrorMapEEP_->Fill(ix,iy, untils->getMeanErrorWithinNSigma(nSigma,maxRange));
+               TimeMapEEP_->Fill(ix,iy, mean_nsigma);
+               TimeErrorMapEEP_->Fill(ix,iy, std_nsigma);
                OccupancyEEP_->Fill(ix,iy, untils->num());
-               RechitTimeEEP_->Fill(untils->getMeanWithinNSigma(nSigma,maxRange));
+               RechitTimeEEP_->Fill(mean_nsigma);
             }
 
             float correction =  -1*untils->getMeanWithinNSigma(nSigma,maxRange);
@@ -187,16 +190,18 @@ void RunEcalTimingCalibration::Analyze(){
 
          untils->clear();
          untils->add(timingEventBX_time[tx.first][tz.first]); 
+         float mean_nsigma = untils->getMeanWithinNSigma(nSigma,maxRange);
+         float std_nsigma = untils->getMeanErrorWithinNSigma(nSigma,maxRange);
 
          if(untils->num() == 0) continue; 
 
-         if(tz.first == 0) BXTimeEB_->SetBinContent(BXTimeEB_->FindBin(tx.first),untils->getMeanWithinNSigma(nSigma,maxRange));
-         else if(tz.first == 1) BXTimeEEM_->SetBinContent(BXTimeEEM_->FindBin(tx.first),untils->getMeanWithinNSigma(nSigma,maxRange));
-         else if(tz.first == 2) BXTimeEEP_->SetBinContent(BXTimeEEP_->FindBin(tx.first),untils->getMeanWithinNSigma(nSigma,maxRange));
+         if(tz.first == 0) BXTimeEB_->SetBinContent(BXTimeEB_->FindBin(tx.first),mean_nsigma);
+         else if(tz.first == 1) BXTimeEEM_->SetBinContent(BXTimeEEM_->FindBin(tx.first),mean_nsigma);
+         else if(tz.first == 2) BXTimeEEP_->SetBinContent(BXTimeEEP_->FindBin(tx.first),mean_nsigma);
 
-         if(tz.first == 0) BXTimeEB_->SetBinError(BXTimeEB_->FindBin(tx.first),untils->getMeanErrorWithinNSigma(nSigma,maxRange));
-         else if(tz.first == 1) BXTimeEEM_->SetBinError(BXTimeEEM_->FindBin(tx.first),untils->getMeanErrorWithinNSigma(nSigma,maxRange));
-         else if(tz.first == 2) BXTimeEEP_->SetBinError(BXTimeEEP_->FindBin(tx.first),untils->getMeanErrorWithinNSigma(nSigma,maxRange));
+         if(tz.first == 0) BXTimeEB_->SetBinError(BXTimeEB_->FindBin(tx.first),std_nsigma);
+         else if(tz.first == 1) BXTimeEEM_->SetBinError(BXTimeEEM_->FindBin(tx.first),std_nsigma);
+         else if(tz.first == 2) BXTimeEEP_->SetBinError(BXTimeEEP_->FindBin(tx.first),std_nsigma);
 
          if(tz.first == 0) BXTimeEB_Num_->SetBinContent(BXTimeEB_Num_->FindBin(tx.first),untils->num());
          else if(tz.first == 1) BXTimeEEM_Num_->SetBinContent(BXTimeEEM_Num_->FindBin(tx.first),untils->num());
