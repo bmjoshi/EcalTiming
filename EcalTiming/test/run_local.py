@@ -30,6 +30,7 @@ parser.add_argument('-e', '--end-run', type=int, help='Ending run', default=3558
 parser.add_argument('--era', type=str, default="2023B", help="Run era")
 parser.add_argument('-ns', '--nsigma', type=int, default=2, help='Width of the cut in units of sigma.')
 parser.add_argument('-r', '--max-range', type=int, default=10, help='Maximum range of the distribution.')
+parser.add_argument('-py', '--payload', type=str, default=None, help='Payload to be used for calculating absolute calibrations.')
 parser.add_argument('--energy-cuts', action="store_true", default=False, help='apply energy cuts')
 
 args = parser.parse_args()
@@ -84,6 +85,7 @@ if not os.path.exists(path_to_output):
     os.system('mkdir {}'.format(path_to_output))
 else:
     print("Directory already present.")
+    #sys.exit(0)
     
 if not os.path.exists('{}/plots'.format(path_to_output)):
    os.system('mkdir {}/plots'.format(path_to_output))
@@ -460,13 +462,19 @@ for ieta_, iphi_ in bad_EB_list:
     plt.close()
 '''
 
-os.system('EcalTimingCalibration EcalTimingCalibration_cfg_{}_{}.py'.format(args.start_run,args.end_run))
-os.system('mv EcalTimingCalibration_cfg_{}_{}.py {}'.format(args.start_run,args.end_run,path_to_output))
-os.system('mv FILELIST_{}_{} {}'.format(args.start_run,args.end_run,path_to_output))
-os.system('cp {out}/ecalTiming-corr.dat {out}/ecalTiming-corr_{date}.dat'.format(out=path_to_output, date=date))
-os.system('python makeTimingXML.py --tag=EcalTimeCalibConstants_v01_prompt --calib={}/ecalTiming-corr_{}.dat'.format(path_to_output,date))
-os.system('python makeTimingSqlite.py --tag=EcalTimeCalibConstants_v01_prompt --calib={}/ecalTiming-abs_{}.xml'.format(path_to_output,date))
-
+#os.system('EcalTimingCalibration EcalTimingCalibration_cfg_{}_{}.py'.format(args.start_run,args.end_run))
+#os.system('mv EcalTimingCalibration_cfg_{}_{}.py {}'.format(args.start_run,args.end_run,path_to_output))
+#os.system('mv FILELIST_{}_{} {}'.format(args.start_run,args.end_run,path_to_output))
+#os.system('cp {out}/ecalTiming-corr.dat {out}/ecalTiming-corr_{date}.dat'.format(out=path_to_output, date=date))
+if args.payload is None:
+    #os.system('python makeTimingXML.py --tag=EcalTimeCalibConstants_v01_prompt --calib={}/ecalTiming-corr_{}.dat'.format(path_to_output,date))
+    print('python makeTimingXML.py --tag=EcalTimeCalibConstants_v01_prompt --calib={}/ecalTiming-corr_{}.dat'.format(path_to_output,date))
+else:
+    print('Using custom payload: ', args.payload)
+    #os.system('python makeTimingXML.py --payload={} --calib={}/ecalTiming-corr_{}.dat'.format(args.payload,path_to_output,date))
+    print('python makeTimingXML.py --payload={} --calib={}/ecalTiming-corr_*.dat'.format(args.payload,path_to_output))
+#os.system('python makeTimingSqlite.py --tag=EcalTimeCalibConstants_v01_prompt --calib={}/ecalTiming-abs_{}.xml'.format(path_to_output,date))
+'''
 filename=path_to_output+'ecalTiming-corr.dat'
 print(filename)
 runs = filename.split('/')[-2]
@@ -476,6 +484,13 @@ erun = runs[1]
 plot_2d_map(filename,srun,erun)
 plot_corrections(filename,srun,erun)
 
-webdir = '/eos/user/{}/{}/www/ECAL_timing/Run2023C/Calibration/ '.format(os.environ['USER'][0], os.environ['USER'])
+webdir = '/eos/user/{}/{}/www/ECAL_timing/Run{}/Calibration/ '.format(os.environ['USER'][0], os.environ['USER'], args.era)
+
+if not os.path.exists(webdir):
+    os.system('mkdir -p {}'.format(webdir))
+else:
+    print("Directory {} already present.".format(webdir))
+
 os.system('ln -s {} {}'.format(path_to_output, webdir))
-os.system('cp /eos/user/{}/{} {}'.format(os.environ['USER'][0],os.environ['USER'],path_to_output))
+os.system('cp /eos/user/{}/{}/www/index.php {}'.format(os.environ['USER'][0],os.environ['USER'],path_to_output))
+'''

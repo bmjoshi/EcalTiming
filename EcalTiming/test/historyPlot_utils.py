@@ -30,7 +30,7 @@ def calibFromXML (inFile, date, icount, timeStamp_list, timeStamp_point, allCali
       return
    crystal_mean = -999.
    crystal_error = 0.
-   with open(inFile) as f_dump:
+   with open(inFile, 'r') as f_dump:
       data_dump = f_dump.read()
       lines_dump = data_dump.splitlines()  
       EB_plus = []
@@ -126,7 +126,7 @@ def calibFromDAT (inFile, date, icount, timeStamp_list, timeStamp_point, allCali
       return
    crystal_mean = -999.
    crystal_error = 0.
-   with open(inFile) as f_dump:
+   with open(inFile, 'r') as f_dump:
       data_dump = f_dump.read()
       lines_dump = data_dump.splitlines()  
       EB_plus = []
@@ -273,7 +273,7 @@ def makeAbsTimingXML(calib, timeIntercalib_EB, timeIntercalib_EE, pos_EB, pos_EE
    if os.path.isfile(str(output)):
       print("WARNING: overwriting ",output)
       command = os.system("rm "+str(output))
-   f_tag = open(str(output),"w")
+   f_tag = open(str(output), 'w')
    for pos,x in enumerate(lines_dump):
        x_intro = str(x)+"\n"
        if(pos<8 or (pos>61207 and pos<61214) or pos>75861):

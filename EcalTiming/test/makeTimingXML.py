@@ -166,11 +166,11 @@ if(calib == ""):
          print "WARNING: wrong import format! Skipping this IOV"  
    f_absCalib.close()
 else:
-   print(calib) 
+   print("calib:", calib) 
    output_absCalib = calib.replace(".dat", ".xml")
    output_absCalib = output_absCalib.replace("-corr_", "-abs_")
    lines_interCalib_split = calib.split("/")
-   interCalib_time = lines_interCalib_split[len(lines_interCalib_split)-1].split("_")
+   interCalib_time = lines_interCalib_split[-1].split("_")
    if(interCalib_time[3].find(".dat") != -1):
       date = interCalib_time[3].split('-')[0].replace(".dat", "")+"/"+interCalib_time[2]+"/"+interCalib_time[1]
       timeStamp = time.mktime(datetime.datetime.strptime(date, "%d/%m/%Y").timetuple())
@@ -188,9 +188,11 @@ else:
          command = os.system("conddb dump "+ str(line_IOVs_split[5]) +" > dump_tmp")
       makeAbsTimingXML(calib, timeIntercalib_EB, timeIntercalib_EE, pos_EB, pos_EE, crystals_EB, crystals_EE, ix, iy, iz, output_absCalib)
       print "---> Absolute Timing file produced: ",output_absCalib
+   elif payload!="":
+      command = os.system("condb dump "+str(payload)+" > dump_tmp")
+      makeAbsTimingXML(calib, timeIntercalib_EB, timeIntercalib_EE, pos_EB, pos_EE, crystals_EB, crystals_EE, ix, iy, iz, output_absCalib)
    else:
       print "WARNING: wrong import format! Skipping this IOV"  
 
 command = os.system("rm IOVs_tmp")
 command = os.system("rm dump_tmp")
-

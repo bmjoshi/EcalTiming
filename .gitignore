@@ -1,7 +1,7 @@
 *.[oa]
 *~
 *.dat
-*.txt
+./*.txt
 *.png
 *.root
 __init__.py
