@@ -1,1 +1,4 @@
-processDump*.py
+crab/processDump*.py
+crab/das_query.json
+crab/FILELIST*
+data/templates

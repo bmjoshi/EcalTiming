@@ -11,6 +11,7 @@ parser.add_argument('-e','--end-run',type=str,default=367416)
 parser.add_argument('-gt','--global-tag',type=str,default='130X_dataRun3_Prompt_v3')
 parser.add_argument('--era',type=str,default='Test')
 parser.add_argument('-sq','--sqlite-file',type=str,default='ecalTiming-abs.db')
+parser.add_argument('--algo',type=str,default="RatioMethod")
 args = parser.parse_args()
 print(args.mode)
 if args.mode not in ["validate","compute"]:
@@ -27,7 +28,7 @@ tstamp = datetime.now()
 date = '{}{}{}{}{}{}'.format(tstamp.day,tstamp.month,tstamp.year,tstamp.hour,tstamp.minute,tstamp.second)
 
 
-cmd = 'dasgoclient --query "file dataset=/AlCaPhiSym/Run2023C-v1/RAW run in ['
+cmd = 'dasgoclient --query "file dataset=/AlCaPhiSym/Run{}-v1/RAW run in ['.format(args.era)
 for i in range(int(args.start_run),int(args.end_run)+1):
     cmd += '%s' % str(i)
     if i!=int(args.end_run): cmd+=','
@@ -64,6 +65,8 @@ for run in runmap:
                   line = line.replace('<VALIDATE>', ",'useCustomTimeCalib=True', 'sqliteRecord=sqlite_file:src/EcalTiming/EcalTiming/data/templates/{}'".format(args.sqlite_file))
              else:
                  line = line.replace('<VALIDATE>','')
+          if '<ALGO>' in line:
+              line = line.replace('<ALGO>', args.algo)
           if '<FILES>' in line: line = line.replace('<FILES>', files)
           f0.write(line)
    print('crab submit -c crab_Production_{}_{}.py'.format(date, run))

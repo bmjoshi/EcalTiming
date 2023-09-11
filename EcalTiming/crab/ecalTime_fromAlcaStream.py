@@ -25,6 +25,11 @@ options.register('step',
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.string,
                  "Do reco, time analysis or both, RECO|TIMEANALYSIS|RECOTIMEANALYSIS")
+options.register('timealgo',
+                 'RatioMethod',
+                 VarParsing.VarParsing.multiplicity.singleton,
+                 VarParsing.VarParsing.varType.string,
+                 "Timing algo used in multifit producer")
 options.register('skipEvents',
                  0,
                  VarParsing.VarParsing.multiplicity.singleton,
@@ -206,6 +211,20 @@ else:
                                      globaltag = cms.string(options.globaltag),
                                      connect = cms.string('frontier://FrontierProd/CMS_CONDITIONS'))
 
+# Adjustments depending on timing algorithm
+if options.timealgo == "crossCorrelationMethod":
+    process.ecalMultiFitUncalibRecHit.cpu.algoPSet.timealgo = cms.string(options.timealgo)
+    process.ecalMultiFitUncalibRecHit.cpu.algoPSet.outOfTimeThresholdGain12pEB = cms.double(2.5)
+    process.ecalMultiFitUncalibRecHit.cpu.algoPSet.outOfTimeThresholdGain12mEB = cms.double(2.5)
+    process.ecalMultiFitUncalibRecHit.cpu.algoPSet.outOfTimeThresholdGain61pEB = cms.double(2.5)
+    process.ecalMultiFitUncalibRecHit.cpu.algoPSet.outOfTimeThresholdGain61mEB = cms.double(2.5)
+    process.ecalMultiFitUncalibRecHit.cpu.algoPSet.crossCorrelationTimeShiftWrtRations = cms.double(0.0)
+elif options.timealgo == "RatioMethod":
+    process.ecalMultiFitUncalibRecHit.cpu.algoPSet.timealgo = cms.string(options.timealgo)
+    process.ecalMultiFitUncalibRecHit.cpu.algoPSet.outOfTimeThresholdGain12pEB = cms.double(5.)
+    process.ecalMultiFitUncalibRecHit.cpu.algoPSet.outOfTimeThresholdGain12mEB = cms.double(5.)
+    process.ecalMultiFitUncalibRecHit.cpu.algoPSet.outOfTimeThresholdGain61pEB = cms.double(5.)
+    process.ecalMultiFitUncalibRecHit.cpu.algoPSet.outOfTimeThresholdGain61mEB = cms.double(5.)
 
 ## Process Digi To Raw Step
 process.digiStep = cms.Sequence(process.ecalDigis  + process.ecalPreshowerDigis)
