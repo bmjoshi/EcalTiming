@@ -71,8 +71,13 @@ Once the libraries are updated, run the following command to get the XML files.
 ```
   python3 makeXML.py --calib=<calibration-file> --tag=<tag>
 ```
+5) Crab jobs can be submitted for making the ntuples. The can either be run in compute mode, where it uses the payloads corresponding to the runs found in the CondDB. For generating crab jobs for validation, one needs to provide a custom sqlite file, which contains the latest timing calibrations. Additionally, one also needs to specify `algo`, which is either `crossCorrelationMethod` or the default `ratioMethod`.
+```
+python generate_run_jobs.py validate --era Run2022D -sq ecalTiming-abs_2023_10_18.db -s 357885 -e 357902 --algo crossCorrelationMethod --dbtag=EcalTimeCalibConstants_v3_hlt
+```
 
-5) Make history plot:
+
+7) Make history plot:
 ```   
 cd EcalTiming/EcalTiming/test/
 eg: python makeHistoryPlot.py --tag=EcalTimeCalibConstants_v01_express --year=2017
