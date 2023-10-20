@@ -251,7 +251,7 @@ def makeAbsTimingXML(calib, timeIntercalib_EB, timeIntercalib_EE, pos_EB, pos_EE
    lines_interCalib = data_interCalib.splitlines() 
    for pos,x in enumerate(lines_interCalib):
       lines_interCalib_split = x.split()
-      if(pos>=0 and pos<=60496): 
+      if(pos>=0 and pos<=60422): 
          if(lines_interCalib_split[3] == 'nan' or lines_interCalib_split[3] == '-nan' or abs(float(lines_interCalib_split[3]))<=(abs(float(lines_interCalib_split[4]))/math.sqrt(float(lines_interCalib_split[5])))):
             timeIntercalib_EB[lines_interCalib_split[7]]=float(0.) 
             #print("WARNING:",lines_interCalib_split[0],lines_interCalib_split[1],lines_interCalib_split[2],"- anomalous crystal, setting calibration to 0"
