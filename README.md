@@ -58,6 +58,20 @@ Produce the sqlite file from the absolute timing xml file:
   eg: python makeTimingSqlite.py --inList=input_List_2017_absTiming.dat --tag=EcalTimeCalibConstants_Legacy2017_v1 
   sh launch_tagCreation.sh
 ```
+
+makeTimingXML.py is obsolete as it does not track the EE and EB crystals properly. A new script has been created using `ecalic` library. To use the library, update versions of `ecalic` and `pandas` are needed. It also allows to tracks the dead crystals in the DB. This libraries can be updated using the following lines:
+
+```
+   pip3 install --user ecalic
+   pip3 install --user pandas
+```
+
+Once the libraries are updated, run the following command to get the XML files.
+
+```
+  python3 makeXML.py --calib=<calibration-file> --tag=<tag>
+```
+
 5) Make history plot:
 ```   
 cd EcalTiming/EcalTiming/test/
@@ -67,3 +81,4 @@ eg: python makeHistoryPlot.py --inList=input_List_2017.dat --runBased
 eg: python makeHistoryPlot.py --inList=input_List_2017_RunE.dat --epoch=E
 eg: python makeHistoryPlot.py --inList=input_List_2017_absTiming.dat --absTime
 ``` 
+
