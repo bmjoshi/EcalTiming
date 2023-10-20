@@ -97,6 +97,11 @@ options.register('outputFile',
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.string,
                 "outputFile")
+options.register('dbtag',
+                 'EcalTimeCalibConstants_v01_prompt',
+                 VarParsing.VarParsing.multiplicity.singleton,
+                 VarParsing.VarParsing.varType.string,
+                 "DB tag (EcalTimeCalibConstants_v01_prompt/EcalTimeCalibConstants_v3_hlt)")
                  
 ### setup any defaults you want
 #options.output=options.outputFile
@@ -198,18 +203,27 @@ if (options.useCustomTimeCalib):
                                  globaltag = cms.string(options.globaltag),
                                  connect = cms.string('frontier://FrontierProd/CMS_CONDITIONS'),
                                  toGet = cms.VPSet(
-                               cms.PSet(
-                                   record = cms.string('EcalTimeCalibConstantsRcd'),
-                                   tag = cms.string('EcalTimeCalibConstants_v01_prompt'),
-                                   connect = cms.string(options.sqliteRecord),
-            )
-        )
-    )
+                                    cms.PSet(
+                                        record = cms.string('EcalTimeCalibConstantsRcd'),
+                                        tag = cms.string(options.dbtag),
+                                        connect = cms.string(options.sqliteRecord),
+                                        )
+                                    )
+                                 )
 else:
     process.GlobalTag = cms.ESSource("PoolDBESSource",
                                      CondDBSetup,
                                      globaltag = cms.string(options.globaltag),
-                                     connect = cms.string('frontier://FrontierProd/CMS_CONDITIONS'))
+                                     connect = cms.string('frontier://FrontierProd/CMS_CONDITIONS'),
+                                     toCopy = cms.VPSet(
+                                     cms.PSet(
+                                         record = cms.string('EcalTimeCalibConstantsRcd'),
+                                         connect = cms.string('sqlite_file:tmp.db')
+                                         )
+                                      )
+                                     )
+
+    print(process.GlobalTag.__dict__)
 
 # Adjustments depending on timing algorithm
 if options.timealgo == "crossCorrelationMethod":

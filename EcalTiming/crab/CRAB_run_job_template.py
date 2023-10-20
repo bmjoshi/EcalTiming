@@ -18,7 +18,7 @@ config.General.transferOutputs = True
 config.General.transferLogs = True
 
 config.JobType.pluginName = 'Analysis'
-config.JobType.pyCfgParams = ['outputFile=timing_reco_selections.root', 'globaltag=<GT>' <VALIDATE>,'timealgo=<ALGO>']
+config.JobType.pyCfgParams = ['outputFile=timing_reco_selections.root', 'dbtag=<DB>', 'globaltag=<GT>' <VALIDATE>,'timealgo=<ALGO>']
 config.JobType.psetName = 'ecalTime_fromAlcaStream.py'
 
 config.JobType.allowUndistributedCMSSW = True
@@ -31,7 +31,7 @@ config.Data.userInputFiles = [<FILES>]
 config.Data.inputDBS      = 'global'
 config.Data.splitting     = 'FileBased' #'LumiBased' / 'FileBased'
 config.Data.unitsPerJob   = <NFILES> #30000
-config.Data.outLFNDirBase = '/store/group/dpg_ecal/alca_ecalcalib/EcalTiming/Run<ERA>_Prompt/'
+config.Data.outLFNDirBase = '/store/group/dpg_ecal/alca_ecalcalib/EcalTiming/<ERA>_Prompt/'
 config.Data.publication   = False
 config.Data.allowNonValidInputDataset = True
 

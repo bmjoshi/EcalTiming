@@ -4,5 +4,6 @@ crab.log
 EcalTimeCalibConstants_Run1_Run2_Run3_v02_offline*
 
 # local files
-hadd
+hadd*
 submitall
+SubmitAll.sh
