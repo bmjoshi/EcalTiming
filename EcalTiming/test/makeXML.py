@@ -107,12 +107,12 @@ if(payload != ""):
    command = os.system("conddb dump "+ str(payload) +" > dump_tmp")
 else:
    command = """
-   conddb list EcalTimeCalibConstants_v01_prompt | tail -2 | head -1 &> tmp;
+   conddb list {} | tail -2 | head -1 &> tmp;
    cat tmp | cut -d$" " -f11 > tmppyload;
    rm tmp;
    conddb dump $(cat tmppyload) > dump_tmp;
    rm tmppyload;
-   """
+   """.format(tag)
    os.system(command)
 
 df = pd.read_csv(calib, header=None, delimiter='\t')
