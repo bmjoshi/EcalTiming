@@ -464,7 +464,7 @@ os.system('EcalTimingCalibration EcalTimingCalibration_cfg_{}_{}.py'.format(args
 os.system('mv EcalTimingCalibration_cfg_{}_{}.py {}'.format(args.start_run,args.end_run,path_to_output))
 os.system('mv FILELIST_{}_{} {}'.format(args.start_run,args.end_run,path_to_output))
 os.system('cp {out}/ecalTiming-corr.dat {out}/ecalTiming-corr_{date}.dat'.format(out=path_to_output, date=date))
-os.system('python makeTimingXML.py --tag=EcalTimeCalibConstants_v01_prompt --calib={}/ecalTiming-corr_{}.dat'.format(path_to_output,date))
+os.system('python makeXML.py --tag=EcalTimeCalibConstants_v01_prompt --calib={}/ecalTiming-corr_{}.dat'.format(path_to_output,date))
 os.system('python makeTimingSqlite.py --tag=EcalTimeCalibConstants_v01_prompt --calib={}/ecalTiming-abs_{}.xml'.format(path_to_output,date))
 
 filename=path_to_output+'ecalTiming-corr.dat'
